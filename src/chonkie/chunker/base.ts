@@ -1,5 +1,7 @@
+/** Base Chunking Class. **/
+
 import { Tokenizer } from "../tokenizer";
-import { Chunk } from "../types/base";.
+import { Chunk } from "../types/base";
 
 export abstract class BaseChunker {
   protected tokenizer: Tokenizer;
