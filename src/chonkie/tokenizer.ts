@@ -434,8 +434,9 @@ export class Tokenizer {
             case "chonkie":
                 return (instance as BaseTokenizer).encodeBatch(texts);
             case "transformers":
-                const batchEncoding = await (instance as TransformersJsTokenizer)(texts, { add_special_tokens: false, padding: true });
-                return batchEncoding.input_ids as number[][]; // input_ids is number[][]
+                // Process each text in parallel using the existing this.encode() method.
+                // Note: The console.log for "Batch encoding result:" is removed as 'batchEncoding' from the direct call no longer exists.
+                return Promise.all(texts.map(text => this.encode(text)));
             case "callable":
                 if ((instance as CallableTokenizer).encode) {
                     return texts.map(text => (instance as CallableTokenizer).encode!(text));
@@ -481,8 +482,7 @@ export class Tokenizer {
             case "chonkie":
                 return (instance as BaseTokenizer).countTokensBatch(texts);
             case "transformers":
-                const batchEncoding = await (instance as TransformersJsTokenizer)(texts, { add_special_tokens: false, padding: true });
-                return (batchEncoding.input_ids as number[][]).map(ids => ids.length);
+                return Promise.all(texts.map(text => this.countTokens(text)));
             case "callable":
                 return texts.map(text => (instance as CallableTokenizer).countTokens(text));
             default:

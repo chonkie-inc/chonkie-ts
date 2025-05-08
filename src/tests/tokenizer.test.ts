@@ -78,8 +78,8 @@ describe("Tokenizer", () => {
 
   describe("String Initialization", () => {
     // Note: "cl100k_base", "p50k_base" are Tiktoken specific and not directly supported 
-    // by HF or Transformers loaders by those names. We'll test with "gpt2".
-    const modelNames = ["gpt2"];
+    // by HF or Transformers loaders by those names. We'll test with "google-bert/bert-base-uncased".
+    const modelNames = ["google-bert/bert-base-uncased"];
 
     test.each(modelNames)("initialization with model string '%s'", async (modelName) => {
       try {
@@ -115,7 +115,7 @@ describe("Tokenizer", () => {
       // Exact match can be tricky due to subtle differences. 
       // The TS implementation aims for this with skipSpecialTokens/addSpecialTokens.
       // For robust testing, consider comparing normalized versions or specific keywords.
-      // For now, let's assume near-perfect reconstruction for gpt2.
+      // For now, let's assume near-perfect reconstruction for google-bert/bert-base-uncased.
       // This might need adjustment based on actual library behavior.
       // expect(decoded).toBe(sampleText); 
       expect(decoded.length).toBeGreaterThan(0);
