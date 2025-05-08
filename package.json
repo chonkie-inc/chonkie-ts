@@ -1,0 +1,25 @@
+{
+  "name": "chonkie",
+  "version": "0.0.2",
+  "description": "Chonkie module",
+  "main": "dist/chonkie/tokenizer.js",
+  "types": "dist/chonkie/tokenizer.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "Shreyash Nigam <shreyash@chonkie.ai>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chonkie-inc/chonkie-ts.git"
+  },
+  "homepage": "https://docs.chonkie.ai",
+  "keywords": ["tokenizer", "parser", "chonkie", "typescript"],
+  "devDependencies": {
+    "typescript": "^5.0.0" 
+  },
+  "license": "MIT"
+}
