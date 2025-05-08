@@ -1,2 +1,2 @@
-# chonkiet
-Typescript Bindings for Chonkie
+# Chonkie
+No Nonsense Chunking Library

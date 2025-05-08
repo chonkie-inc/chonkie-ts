@@ -1,6 +1,6 @@
 {
   "name": "chonkie",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Chonkie module",
   "main": "dist/chonkie/tokenizer.js",
   "types": "dist/chonkie/tokenizer.d.ts",
