@@ -244,14 +244,14 @@ export class Tokenizer {
 
     /**
      * Creates and initializes a Tokenizer instance.
-     * @param tokenizer Tokenizer identifier (e.g., "gpt2", "character", "word"),
+     * @param tokenizer Tokenizer identifier (e.g., "google-bert/bert-base-uncased", "character", "word"),
      *                  a pre-initialized tokenizer instance, or a custom callable tokenizer.
-     *                  Defaults to "gpt2".
+     *                  Defaults to "google-bert/bert-base-uncased".
      * @returns A promise that resolves to a Tokenizer instance.
      * @throws Error if the specified tokenizer cannot be loaded or is unsupported.
      */
     public static async create(
-        tokenizer: string | SupportedTokenizerInstance | CallableTokenizer = "gpt2"
+        tokenizer: string | SupportedTokenizerInstance | CallableTokenizer = "google-bert/bert-base-uncased"
     ): Promise<Tokenizer> {
         if (typeof tokenizer === "string") {
             const instance = await Tokenizer._loadTokenizer(tokenizer);
@@ -434,7 +434,7 @@ export class Tokenizer {
             case "chonkie":
                 return (instance as BaseTokenizer).encodeBatch(texts);
             case "transformers":
-                const batchEncoding = await (instance as TransformersJsTokenizer).call(texts, { addSpecialTokens: false, returnTensors: undefined });
+                const batchEncoding = await (instance as TransformersJsTokenizer)(texts, { add_special_tokens: false, padding: true });
                 return batchEncoding.input_ids as number[][]; // input_ids is number[][]
             case "callable":
                 if ((instance as CallableTokenizer).encode) {
@@ -458,7 +458,7 @@ export class Tokenizer {
             case "chonkie":
                 return (instance as BaseTokenizer).decodeBatch(tokenSequences);
             case "transformers":
-                return (instance as TransformersJsTokenizer).batch_decode(tokenSequences, { skipSpecialTokens: true });
+                return (instance as TransformersJsTokenizer).batch_decode(tokenSequences, { skip_special_tokens: true });
             case "callable":
                 if ((instance as CallableTokenizer).decode) {
                     return tokenSequences.map(tokens => (instance as CallableTokenizer).decode!(tokens));
@@ -481,7 +481,7 @@ export class Tokenizer {
             case "chonkie":
                 return (instance as BaseTokenizer).countTokensBatch(texts);
             case "transformers":
-                const batchEncoding = await (instance as TransformersJsTokenizer).call(texts, { addSpecialTokens: false, returnTensors: undefined });
+                const batchEncoding = await (instance as TransformersJsTokenizer)(texts, { add_special_tokens: false, padding: true });
                 return (batchEncoding.input_ids as number[][]).map(ids => ids.length);
             case "callable":
                 return texts.map(text => (instance as CallableTokenizer).countTokens(text));

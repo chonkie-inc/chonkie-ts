@@ -42,7 +42,7 @@ const sampleTextList = [
 
 async function getTransformersTokenizerInstance(): Promise<TransformersJsTokenizer | null> {
   try {
-    return await AutoTokenizer.from_pretrained("gpt2");
+    return await AutoTokenizer.from_pretrained("google-bert/bert-base-uncased");
   } catch (e) {
     console.warn(`Skipping TransformersTokenizer tests: ${(e as Error).message}`);
     return null;
@@ -135,7 +135,7 @@ describe("Tokenizer", () => {
   });
 
   describe("String Init Encode/Decode", () => {
-    const modelNames = ["gpt2"]; // Using a known HF model
+    const modelNames = ["google-bert/bert-base-uncased"]; // Using a known HF model
 
     test.each(modelNames)("basic functionality with string initialized model '%s'", async (modelName) => {
       try {
