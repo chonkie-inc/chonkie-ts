@@ -19,11 +19,11 @@
   },
   "include": [
     "src/**/*"
-  ],
+, "tests"  ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/tests/",
+    "tests",
     "demo"
   ]
 }

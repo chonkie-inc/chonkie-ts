@@ -1,6 +1,6 @@
-import { CodeChunker } from '../../chonkie/chunker/code';
-import { CodeChunk } from '../../chonkie/types/code';
-import { Chunk } from '../../chonkie/types/base';
+import { CodeChunker } from 'chonkie/chunker/code';
+import { CodeChunk } from 'chonkie/types/code';
+import { Chunk } from 'chonkie/types/base';
 
 describe('CodeChunker', () => {
   // Sample code snippets for testing

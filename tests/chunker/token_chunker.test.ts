@@ -1,6 +1,6 @@
-import { TokenChunker } from '../../chonkie/chunker/token';
-import { Tokenizer } from '../../chonkie/tokenizer';
-import { Chunk } from '../../chonkie/types/base';
+import { TokenChunker } from '../../src/chonkie/chunker/token';
+import { Tokenizer } from '../../src/chonkie/tokenizer';
+import { Chunk } from '../../src/chonkie/types/base';
 import { AutoTokenizer, PreTrainedTokenizer } from "@huggingface/transformers";
 
 

@@ -3,7 +3,7 @@ import {
   CharacterTokenizer,
   WordTokenizer,
   CallableTokenizer,
-} from "../chonkie/tokenizer";
+} from "../src/chonkie/tokenizer";
 import { AutoTokenizer, PreTrainedTokenizer } from "@huggingface/transformers";
 
 type TransformersJsTokenizer = PreTrainedTokenizer;
