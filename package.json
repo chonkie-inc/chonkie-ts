@@ -38,10 +38,6 @@
     "@types/jest": "^29.5.14",
     "jest": "^29.5.0",
     "tree-sitter": "^0.22.4",
-    "tree-sitter-java": "^0.23.5",
-    "tree-sitter-javascript": "^0.23.1",
-    "tree-sitter-python": "^0.23.6",
-    "tree-sitter-typescript": "^0.23.2",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.0",
@@ -58,10 +54,6 @@
     "tokenizers": "^0.13.3"
   },
   "peerDependencies": {
-    "tree-sitter": "^0.22.4",
-    "tree-sitter-java": "^0.23.5",
-    "tree-sitter-javascript": "^0.23.1",
-    "tree-sitter-python": "^0.23.6",
-    "tree-sitter-typescript": "^0.23.2"
+    "tree-sitter": "^0.22.4"
   }
 }
