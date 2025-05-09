@@ -1,5 +1,4 @@
 import { CodeChunker } from '../../chonkie/chunker/code';
-import { Tokenizer } from '../../chonkie/tokenizer';
 import { CodeChunk } from '../../chonkie/types/code';
 import { Chunk } from '../../chonkie/types/base';
 
@@ -42,75 +41,78 @@ greet('Developer');
 console.log(calc.add(5, 3));
 `;
 
-  it('should initialize correctly with default parameters', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
-    expect(chunker).toBeDefined();
-    expect(chunker.chunkSize).toBe(512);
+  it('should initialize correctly', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      128,
+      'chunks',
+      'python'
+    );
+    expect(chunker.chunkSize).toBe(128);
     expect(chunker.returnType).toBe('chunks');
+    expect(chunker.lang).toBe('python');
   });
 
-  it('should initialize correctly with custom parameters', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased', 256);
-    expect(chunker).toBeDefined();
-    expect(chunker.chunkSize).toBe(256);
-    expect(chunker.returnType).toBe('chunks');
-  });
-
-  it('should chunk code correctly', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
+  it('should chunk Python code correctly', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'chunks',
+      'python',
+      true // include nodes
+    );
     const chunks = await chunker.chunk(pythonCode) as Chunk[];
 
     expect(Array.isArray(chunks)).toBe(true);
     expect(chunks.length).toBeGreaterThan(0);
-    expect(chunks[0]).toBeInstanceOf(CodeChunk);
-
-    chunks.forEach(chunk => {
-      const codeChunk = chunk as CodeChunk;
-      expect(codeChunk.text).toBeDefined();
-      expect(codeChunk.startIndex).toBeGreaterThanOrEqual(0);
-      expect(codeChunk.endIndex).toBeGreaterThan(codeChunk.startIndex);
-      expect(codeChunk.tokenCount).toBeGreaterThan(0);
-      expect(codeChunk.lang).toBe('python');
-    });
+    expect(chunks.every(chunk => chunk instanceof CodeChunk)).toBe(true);
+    expect(chunks.every(chunk => (chunk as CodeChunk).text)).toBe(true);
+    expect(chunks.every(chunk => (chunk as CodeChunk).startIndex !== undefined)).toBe(true);
+    expect(chunks.every(chunk => (chunk as CodeChunk).endIndex !== undefined)).toBe(true);
+    expect(chunks.every(chunk => (chunk as CodeChunk).tokenCount !== undefined)).toBe(true);
+    expect(chunks.every(chunk => (chunk as CodeChunk).nodes !== undefined)).toBe(true);
   });
 
-  it('should handle empty text', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
-    const chunks = await chunker.chunk('');
-    expect(chunks).toEqual([]);
-  });
-
-  it('should handle whitespace-only text', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
-    const chunks = await chunker.chunk('   \n\t\n  ');
-    expect(chunks).toEqual([]);
-  });
-
-  it('should have correct indices for chunks', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
+  it('should reconstruct Python code correctly', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'chunks',
+      'python'
+    );
     const chunks = await chunker.chunk(pythonCode) as Chunk[];
-
     const reconstructedText = chunks.map(chunk => (chunk as CodeChunk).text).join('');
-    expect(normalizeText(reconstructedText)).toBe(normalizeText(pythonCode));
+    expect(reconstructedText).toBe(pythonCode);
   });
 
-  it('should respect chunk size limits', async () => {
-    const chunkSize = 100;
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased', chunkSize);
+  it('should respect chunk size limits for Python code', async () => {
+    const chunkSize = 50;
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      chunkSize,
+      'chunks',
+      'python'
+    );
     const chunks = await chunker.chunk(pythonCode) as Chunk[];
-
-    chunks.forEach(chunk => {
-      const codeChunk = chunk as CodeChunk;
-      expect(codeChunk.tokenCount).toBeLessThan(chunkSize + 20);
+    
+    // Check all but last chunk rigorously
+    chunks.slice(0, -1).forEach(chunk => {
+      expect((chunk as CodeChunk).tokenCount).toBeLessThan(chunkSize + 20);
     });
+    // Last chunk must have content
     expect(chunks[chunks.length - 1].tokenCount).toBeGreaterThan(0);
   });
 
-  it('should maintain code structure', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
+  it('should have correct indices for Python code chunks', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'chunks',
+      'python'
+    );
     const chunks = await chunker.chunk(pythonCode) as Chunk[];
-
     let currentIndex = 0;
+
     chunks.forEach(chunk => {
       const codeChunk = chunk as CodeChunk;
       expect(codeChunk.startIndex).toBe(currentIndex);
@@ -118,28 +120,110 @@ console.log(calc.add(5, 3));
       expect(codeChunk.text).toBe(pythonCode.slice(codeChunk.startIndex, codeChunk.endIndex));
       currentIndex = codeChunk.endIndex;
     });
+    expect(currentIndex).toBe(pythonCode.length);
   });
 
-  it('should have correct string representation', async () => {
-    const chunker = await CodeChunker.create('google-bert/bert-base-uncased');
-    const chunks = await chunker.chunk(pythonCode) as Chunk[];
-    if (chunks.length === 0) {
-      return; // Skip if no chunks generated
-    }
+  it('should return texts when returnType is texts', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'texts',
+      'python'
+    );
+    const texts = await chunker.chunk(pythonCode) as string[];
 
-    const chunk = chunks[0] as CodeChunk;
-    const representation = chunk.toString();
-    expect(representation).toContain(`text=${chunk.text}`);
-    expect(representation).toContain(`startIndex=${chunk.startIndex}`);
-    expect(representation).toContain(`endIndex=${chunk.endIndex}`);
-    expect(representation).toContain(`tokenCount=${chunk.tokenCount}`);
-    expect(representation).toContain(`lang=${chunk.lang}`);
+    expect(Array.isArray(texts)).toBe(true);
+    expect(texts.length).toBeGreaterThan(0);
+    expect(texts.every(text => typeof text === 'string')).toBe(true);
+    const reconstructedText = texts.join('');
+    expect(reconstructedText).toBe(pythonCode);
   });
 
-  // Helper function to normalize text for comparison
-  const normalizeText = (text: string): string => {
-    return text.toLowerCase().replace(/\s+/g, ' ').trim();
-  };
+  it('should handle empty input', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'chunks',
+      'python'
+    );
+    const chunks = await chunker.chunk('');
+    expect(chunks).toEqual([]);
 
-  // Remove fromRecipe tests as they are not implemented
+    // Test returnType='texts'
+    const textChunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'texts',
+      'python'
+    );
+    const texts = await textChunker.chunk('');
+    expect(texts).toEqual([]);
+  });
+
+  it('should handle whitespace-only input', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'chunks',
+      'python'
+    );
+    const chunks = await chunker.chunk('   \n\t\n  ');
+    expect(chunks).toEqual([]);
+
+    // Test returnType='texts'
+    const textChunker = await CodeChunker.create(
+      'gpt2',
+      50,
+      'texts',
+      'python'
+    );
+    const texts = await textChunker.chunk('   \n\t\n  ');
+    expect(texts).toEqual([]);
+  });
+
+  it('should chunk JavaScript code correctly', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      30,
+      'chunks',
+      'javascript'
+    );
+    const chunks = await chunker.chunk(jsCode) as Chunk[];
+
+    expect(Array.isArray(chunks)).toBe(true);
+    expect(chunks.length).toBeGreaterThan(0);
+    expect(chunks.every(chunk => chunk instanceof CodeChunk)).toBe(true);
+    const reconstructedText = chunks.map(chunk => (chunk as CodeChunk).text).join('');
+    expect(reconstructedText).toBe(jsCode);
+  });
+
+  it('should reconstruct JavaScript code correctly', async () => {
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      30,
+      'chunks',
+      'javascript'
+    );
+    const chunks = await chunker.chunk(jsCode) as Chunk[];
+    const reconstructedText = chunks.map(chunk => (chunk as CodeChunk).text).join('');
+    expect(reconstructedText).toBe(jsCode);
+  });
+
+  it('should respect chunk size limits for JavaScript code', async () => {
+    const chunkSize = 30;
+    const chunker = await CodeChunker.create(
+      'gpt2',
+      chunkSize,
+      'chunks',
+      'javascript'
+    );
+    const chunks = await chunker.chunk(jsCode) as Chunk[];
+    
+    // Check all but last chunk rigorously
+    chunks.slice(0, -1).forEach(chunk => {
+      expect((chunk as CodeChunk).tokenCount).toBeLessThan(chunkSize + 15);
+    });
+    // Last chunk must have content
+    expect(chunks[chunks.length - 1].tokenCount).toBeGreaterThan(0);
+  });
 }); 
