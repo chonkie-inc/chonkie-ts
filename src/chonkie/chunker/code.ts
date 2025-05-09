@@ -2,8 +2,10 @@
 
 import { Tokenizer } from "../tokenizer";
 import { Chunk } from "../types/base";
-import { CodeChunk } from "../types/code";
+import { CodeChunk, TreeSitterNode } from "../types/code";
 import { BaseChunker } from "./base";
+import Parser from "tree-sitter";
+import { Language } from "tree-sitter";
 
 /**
  * Represents a CodeChunker instance that is also directly callable.
@@ -17,9 +19,11 @@ export type CallableCodeChunker = CodeChunker & {
 
 export class CodeChunker extends BaseChunker {
   public readonly chunkSize: number;
-  public readonly chunkOverlap: number;
   public readonly returnType: "chunks" | "texts";
   public readonly lang?: string;
+  public readonly includeNodes: boolean;
+  private parser: Parser | null = null;
+  private language: Language | undefined = undefined;
 
   /**
    * Private constructor. Use `CodeChunker.create()` to instantiate.
@@ -27,29 +31,23 @@ export class CodeChunker extends BaseChunker {
   private constructor(
     tokenizer: Tokenizer,
     chunkSize: number,
-    chunkOverlap: number,
     returnType: "chunks" | "texts",
-    lang?: string
+    lang?: string,
+    includeNodes: boolean = false
   ) {
     super(tokenizer);
 
     if (chunkSize <= 0) {
       throw new Error("chunkSize must be greater than 0");
     }
-    if (chunkOverlap < 0) {
-      throw new Error("chunkOverlap must be non-negative");
-    }
-    if (chunkOverlap >= chunkSize) {
-      throw new Error("chunkOverlap must be less than chunkSize");
-    }
     if (returnType !== "chunks" && returnType !== "texts") {
       throw new Error("returnType must be either 'chunks' or 'texts'");
     }
 
     this.chunkSize = chunkSize;
-    this.chunkOverlap = chunkOverlap;
     this.returnType = returnType;
     this.lang = lang;
+    this.includeNodes = includeNodes;
   }
 
   /**
@@ -58,9 +56,9 @@ export class CodeChunker extends BaseChunker {
   public static async create(
     tokenizerOrName: string | Tokenizer = "gpt2",
     chunkSize: number = 512,
-    chunkOverlap: number = 0,
     returnType: "chunks" | "texts" = "chunks",
-    lang?: string
+    lang?: string,
+    includeNodes: boolean = false
   ): Promise<CallableCodeChunker> {
     let tokenizerInstance: Tokenizer;
     if (typeof tokenizerOrName === 'string') {
@@ -72,9 +70,9 @@ export class CodeChunker extends BaseChunker {
     const plainInstance = new CodeChunker(
       tokenizerInstance,
       chunkSize,
-      chunkOverlap,
       returnType,
-      lang
+      lang,
+      includeNodes
     );
 
     // Create the callable function wrapper
@@ -100,98 +98,204 @@ export class CodeChunker extends BaseChunker {
   }
 
   /**
-   * Generate groups of tokens from a list of tokens based on chunkSize and chunkOverlap.
+   * Initialize the tree-sitter parser for the given language.
    */
-  private _generateTokenGroups(tokens: number[]): number[][] {
-    const tokenGroups: number[][] = [];
-    if (tokens.length === 0) {
-      return tokenGroups;
+  private async _initParser(lang: string): Promise<void> {
+    if (this.parser && this.language) {
+      return;
     }
 
-    const step = this.chunkSize - this.chunkOverlap;
-
-    for (let start = 0; start < tokens.length; start += step) {
-      const end = Math.min(start + this.chunkSize, tokens.length);
-      tokenGroups.push(tokens.slice(start, end));
+    try {
+      // Dynamically import the language module
+      const langModule = await import(`tree-sitter-${lang.toLowerCase()}`);
+      this.language = langModule.default;
+      this.parser = new Parser();
+      this.parser.setLanguage(this.language);
+    } catch (error) {
+      throw new Error(`Failed to initialize tree-sitter parser for language ${lang}: ${error}`);
     }
-    return tokenGroups;
   }
 
   /**
-   * Create CodeChunk objects from chunk texts, token groups, and token counts.
+   * Merge node groups together.
    */
-  private async _createChunks(
-    chunkTexts: string[],
-    tokenGroups: number[][],
-    tokenCounts: number[]
-  ): Promise<CodeChunk[]> {
-    let overlapCharacterLengths: number[];
+  private _mergeNodeGroups(nodeGroups: TreeSitterNode[][]): TreeSitterNode[] {
+    return nodeGroups.flat();
+  }
 
-    if (this.chunkOverlap > 0) {
-      const overlapTokenSubgroups = tokenGroups.map((group) => {
-        return group.length > this.chunkOverlap
-          ? group.slice(-this.chunkOverlap)
-          : group;
-      });
-      const overlapTexts = await this.tokenizer.decodeBatch(
-        overlapTokenSubgroups
-      );
-      overlapCharacterLengths = overlapTexts.map((text) => text.length);
-    } else {
-      overlapCharacterLengths = new Array(tokenGroups.length).fill(0);
+  /**
+   * Group child nodes based on their token counts.
+   */
+  private async _groupChildNodes(node: TreeSitterNode): Promise<[TreeSitterNode[][], number[]]> {
+    if (!node.children || node.children.length === 0) {
+      return [[], []];
     }
 
+    const nodeGroups: TreeSitterNode[][] = [];
+    const groupTokenCounts: number[] = [];
+    let currentTokenCount = 0;
+    let currentNodeGroup: TreeSitterNode[] = [];
+
+    for (const child of node.children) {
+      const childText = child.text;
+      const tokenCount = await this.tokenizer.countTokens(childText);
+
+      if (tokenCount > this.chunkSize) {
+        if (currentNodeGroup.length > 0) {
+          nodeGroups.push(currentNodeGroup);
+          groupTokenCounts.push(currentTokenCount);
+          currentNodeGroup = [];
+          currentTokenCount = 0;
+        }
+
+        const [childGroups, childTokenCounts] = await this._groupChildNodes(child);
+        nodeGroups.push(...childGroups);
+        groupTokenCounts.push(...childTokenCounts);
+      } else if (currentTokenCount + tokenCount > this.chunkSize) {
+        nodeGroups.push(currentNodeGroup);
+        groupTokenCounts.push(currentTokenCount);
+        currentNodeGroup = [child];
+        currentTokenCount = tokenCount;
+      } else {
+        currentNodeGroup.push(child);
+        currentTokenCount += tokenCount;
+      }
+    }
+
+    if (currentNodeGroup.length > 0) {
+      nodeGroups.push(currentNodeGroup);
+      groupTokenCounts.push(currentTokenCount);
+    }
+
+    return [nodeGroups, groupTokenCounts];
+  }
+
+  /**
+   * Get texts from node groups using original byte offsets.
+   */
+  private _getTextsFromNodeGroups(
+    nodeGroups: TreeSitterNode[][],
+    originalTextBytes: Buffer
+  ): string[] {
+    const chunkTexts: string[] = [];
+
+    for (let i = 0; i < nodeGroups.length; i++) {
+      const group = nodeGroups[i];
+      if (!group.length) continue;
+
+      const startNode = group[0];
+      const endNode = group[group.length - 1];
+      let startByte = startNode.startIndex;
+      let endByte = endNode.endIndex;
+
+      if (startByte > endByte) {
+        console.warn(`Warning: Skipping group due to invalid byte order. Start: ${startByte}, End: ${endByte}`);
+        continue;
+      }
+
+      if (startByte < 0 || endByte > originalTextBytes.length) {
+        console.warn(`Warning: Skipping group due to out-of-bounds byte offsets. Start: ${startByte}, End: ${endByte}, Text Length: ${originalTextBytes.length}`);
+        continue;
+      }
+
+      if (i < nodeGroups.length - 1) {
+        endByte = nodeGroups[i + 1][0].startIndex;
+      }
+
+      try {
+        const chunkBytes = originalTextBytes.slice(startByte, endByte);
+        const text = chunkBytes.toString('utf-8');
+        chunkTexts.push(text);
+      } catch (error) {
+        console.warn(`Warning: Error decoding bytes for chunk (${startByte}-${endByte}): ${error}`);
+        chunkTexts.push("");
+      }
+    }
+
+    // Add any missing bytes at the start and end
+    if (nodeGroups[0]?.[0]?.startIndex > 0) {
+      const initialBytes = originalTextBytes.slice(0, nodeGroups[0][0].startIndex);
+      chunkTexts[0] = initialBytes.toString('utf-8') + chunkTexts[0];
+    }
+
+    const lastGroup = nodeGroups[nodeGroups.length - 1];
+    if (lastGroup?.[lastGroup.length - 1]?.endIndex < originalTextBytes.length) {
+      const remainingBytes = originalTextBytes.slice(lastGroup[lastGroup.length - 1].endIndex);
+      chunkTexts[chunkTexts.length - 1] += remainingBytes.toString('utf-8');
+    }
+
+    return chunkTexts;
+  }
+
+  /**
+   * Create CodeChunk objects from texts, token counts, and node groups.
+   */
+  private _createChunks(
+    texts: string[],
+    tokenCounts: number[],
+    nodeGroups: TreeSitterNode[][]
+  ): CodeChunk[] {
     const chunks: CodeChunk[] = [];
-    let currentCharacterIndex = 0;
-    for (let i = 0; i < chunkTexts.length; i++) {
-      const text = chunkTexts[i];
-      const overlapLength = overlapCharacterLengths[i];
+    let currentIndex = 0;
+
+    for (let i = 0; i < texts.length; i++) {
+      const text = texts[i];
       const tokenCount = tokenCounts[i];
+      const nodeGroup = this.includeNodes ? nodeGroups[i] : undefined;
 
-      // Ensure indices are always valid
-      const startIndex = Math.max(0, currentCharacterIndex);
-      const endIndex = startIndex + text.length;
+      chunks.push(new CodeChunk({
+        text,
+        startIndex: currentIndex,
+        endIndex: currentIndex + text.length,
+        tokenCount,
+        lang: this.lang,
+        nodes: nodeGroup
+      }));
 
-      chunks.push(
-        new CodeChunk({
-          text: text,
-          startIndex: startIndex,
-          endIndex: endIndex,
-          tokenCount: tokenCount,
-          lang: this.lang
-        })
-      );
-
-      // Ensure we don't go backwards in the text
-      currentCharacterIndex = Math.max(startIndex, endIndex - overlapLength);
+      currentIndex += text.length;
     }
+
     return chunks;
   }
 
   /**
-   * Split code into overlapping chunks of specified token size.
+   * Recursively chunks the code based on context from tree-sitter.
    */
   public async chunk(text: string): Promise<Chunk[] | string[]> {
     if (!text.trim()) {
       return [];
     }
 
-    const textTokens = await this.tokenizer.encode(text);
-    if (textTokens.length === 0) {
-      return [];
+    const originalTextBytes = Buffer.from(text, 'utf-8');
+
+    if (!this.lang) {
+      throw new Error("Language must be specified for code chunking");
     }
 
-    const tokenGroups = this._generateTokenGroups(textTokens);
-    if (tokenGroups.length === 0) {
-      return [];
+    await this._initParser(this.lang);
+
+    if (!this.parser) {
+      throw new Error("Parser not initialized");
     }
 
-    if (this.returnType === "chunks") {
-      const tokenCounts = tokenGroups.map((group) => group.length);
-      const chunkTexts = await this.tokenizer.decodeBatch(tokenGroups);
-      return this._createChunks(chunkTexts, tokenGroups, tokenCounts);
-    } else {
-      return this.tokenizer.decodeBatch(tokenGroups);
+    let tree: Parser.Tree | null = null;
+    try {
+      tree = this.parser.parse(originalTextBytes.toString());
+      const rootNode = tree.rootNode;
+
+      const [nodeGroups, tokenCounts] = await this._groupChildNodes(rootNode);
+      const texts = this._getTextsFromNodeGroups(nodeGroups, originalTextBytes);
+
+      if (this.returnType === "texts") {
+        return texts;
+      } else {
+        return this._createChunks(texts, tokenCounts, nodeGroups);
+      }
+    } finally {
+      if (!this.includeNodes && tree) {
+        // Clean up if nodes are not needed
+        (tree as any).delete();
+      }
     }
   }
 
@@ -200,7 +304,9 @@ export class CodeChunker extends BaseChunker {
    */
   public toString(): string {
     return `CodeChunker(tokenizer=${this.tokenizer}, ` +
-      `chunkSize=${this.chunkSize}, chunkOverlap=${this.chunkOverlap}, ` +
-      `returnType=${this.returnType}, lang=${this.lang})`;
+      `chunkSize=${this.chunkSize}, ` +
+      `returnType=${this.returnType}, ` +
+      `lang=${this.lang}, ` +
+      `includeNodes=${this.includeNodes})`;
   }
 } 
