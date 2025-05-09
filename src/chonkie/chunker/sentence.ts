@@ -164,11 +164,11 @@ export class SentenceChunker extends BaseChunker {
     let t = text;
     for (const c of this.delim) {
       if (this.includeDelim === "prev") {
-        t = t.replace(c, c + this.sep);
+        t = t.split(c).join(c + this.sep);
       } else if (this.includeDelim === "next") {
-        t = t.replace(c, this.sep + c);
+        t = t.split(c).join(this.sep + c);
       } else {
-        t = t.replace(c, this.sep);
+        t = t.split(c).join(this.sep);
       }
     }
 
@@ -184,24 +184,17 @@ export class SentenceChunker extends BaseChunker {
 
       // If current is empty, start a new sentence
       if (!current) {
-        current = s;
-      } else {
-        // If the current sentence is already long enough, add it to sentences
-        if (current.length >= this.minCharactersPerSentence) {
-          sentences.push(current);
           current = s;
-        } else {
-          // Only combine if the total length would be reasonable
-          const combinedLength = current.length + s.length;
-          if (combinedLength <= this.minCharactersPerSentence * 2) {
-            current += " " + s;
-          } else {
+      } else {
+          // If the current sentence is already long enough, add it to sentences
+          if (current.length >= this.minCharactersPerSentence) {
             sentences.push(current);
             current = s;
+          } else {
+            current.concat(s); // Since s has the spaces in it already, it can be concatenated directly
           }
         }
       }
-    }
 
     // Add the last sentence if it exists
     if (current) {
