@@ -37,7 +37,20 @@ Learn more about the optional dependencies in the [DOCS.md](./DOCS.md) file.
 Chonkie is a simple and easy to use library for chunking text. It is designed to be used in any project that needs to chunk text, and is a great way to get started with text chunking.
 
 ```ts
-import { chunk } from 'chonkie';
+import { TokenChunker } from 'chonkie';
+
+async function main() {
+  const chunker = await TokenChunker.create();
+  
+  const chunks = await chunker.chunk('Woah! Chonkie is such a great ts library!');
+
+  for (const chunk of chunks) {
+    console.log(chunk.text);
+    console.log(chunk.token_count);
+  }
+}
+
+main();
 ```
 
 ## Chunkers 
@@ -49,7 +62,7 @@ import { chunk } from 'chonkie';
 | `TokenChunker` | Splits text into fixed-size token chunks |
 | `SentenceChunker` | Splits text into chunks based on sentences.  |
 | `RecursiveChunker` (⚠️ Experimental) | Splits text hierarchically using customizable rules to create semantically meaningful chunks. |
-| `CodeChunker` (⚠️ Experimental) | Splits code into structurally meaningful chunks. |
+
 
 
 ## Acknowledgements
