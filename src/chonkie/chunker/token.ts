@@ -66,7 +66,7 @@ export class TokenChunker extends BaseChunker {
    * @returns A Promise that resolves to a callable TokenChunker instance.
    * @throws Error if chunkSize <= 0, calculated chunkOverlap is invalid, or returnType is invalid.
    */
-  public static create(
+  public static async create(
     tokenizerOrName: string | Tokenizer = "google-bert/bert-base-uncased",
     chunkSize: number = 512,
     overlap: number = 0,
@@ -76,60 +76,89 @@ export class TokenChunker extends BaseChunker {
       throw new Error("chunkSize must be positive.");
     }
 
-    return new Promise<CallableTokenChunker>(async (resolve, reject) => {
-      try {
-        let calculatedOverlap: number;
-        if (overlap >= 0 && overlap < 1) {
-          calculatedOverlap = Math.floor(overlap * chunkSize);
-        } else {
-          calculatedOverlap = Math.floor(overlap);
-        }
+    let calculatedOverlap: number;
+    if (overlap >= 0 && overlap < 1) {
+      calculatedOverlap = Math.floor(overlap * chunkSize);
+    } else {
+      calculatedOverlap = Math.floor(overlap);
+    }
 
-        // Check for invalid overlap values
-        if (calculatedOverlap < 0) {
-          throw new Error("Calculated chunkOverlap must be non-negative.");
-        }
-        if (calculatedOverlap >= chunkSize) {
-          throw new Error("Calculated chunkOverlap must be less than chunkSize.");
-        }
+    // Check for invalid overlap values
+    if (calculatedOverlap < 0) {
+      throw new Error("Calculated chunkOverlap must be non-negative.");
+    }
+    if (calculatedOverlap >= chunkSize) {
+      throw new Error("Calculated chunkOverlap must be less than chunkSize.");
+    }
 
-        if (returnType !== "chunks" && returnType !== "texts") {
-          throw new Error("returnType must be either 'chunks' or 'texts'.");
-        }
+    if (returnType !== "chunks" && returnType !== "texts") {
+      throw new Error("returnType must be either 'chunks' or 'texts'.");
+    }
 
-        let tokenizerInstance: Tokenizer;
-        if (typeof tokenizerOrName === 'string') {
-          tokenizerInstance = await Tokenizer.create(tokenizerOrName);
-        } else {
-          tokenizerInstance = tokenizerOrName;
-        }
-
-        const plainInstance = new TokenChunker(tokenizerInstance, chunkSize, calculatedOverlap, returnType);
-
-        // Create the callable function wrapper
-        const callableFn = function (
-          this: CallableTokenChunker,
-          textOrTexts: string | string[],
-          showProgress?: boolean
-        ) {
-          if (typeof textOrTexts === 'string') {
-            return plainInstance.call(textOrTexts, showProgress);
-          } else {
-            return plainInstance.call(textOrTexts, showProgress);
-          }
-        };
-
-        // Set the prototype so that 'instanceof TokenChunker' works
-        Object.setPrototypeOf(callableFn, TokenChunker.prototype);
-
-        // Copy all enumerable own properties from plainInstance to callableFn
-        Object.assign(callableFn, plainInstance);
-        
-        resolve(callableFn as unknown as CallableTokenChunker);
-      } catch (error) {
-        reject(error);
+    let tokenizerInstance: Tokenizer;
+    try {
+      if (typeof tokenizerOrName === 'string') {
+        tokenizerInstance = await Tokenizer.create(tokenizerOrName);
+      } else {
+        tokenizerInstance = tokenizerOrName;
       }
-    });
+    } catch (error) {
+      throw new Error(`Failed to initialize tokenizer: ${error}`);
+    }
+
+    const plainInstance = new TokenChunker(tokenizerInstance, chunkSize, calculatedOverlap, returnType);
+
+    // Create the callable function wrapper
+    const callableFn = function (
+      this: CallableTokenChunker,
+      textOrTexts: string | string[],
+      showProgress?: boolean
+    ) {
+      if (typeof textOrTexts === 'string') {
+        return plainInstance.call(textOrTexts, showProgress);
+      } else {
+        return plainInstance.call(textOrTexts, showProgress);
+      }
+    };
+
+    // Set the prototype so that 'instanceof TokenChunker' works
+    Object.setPrototypeOf(callableFn, TokenChunker.prototype);
+
+    // Copy all enumerable own properties from plainInstance to callableFn
+    Object.assign(callableFn, plainInstance);
+    
+    return callableFn as unknown as CallableTokenChunker;
+  }
+
+  /**
+   * Estimate the number of tokens in a text.
+   * @param text The text to estimate tokens for
+   * @returns A promise that resolves to the estimated number of tokens
+   */
+  private async _estimateTokenCount(text: string): Promise<number> {
+    try {
+      const tokens = await this.tokenizer.encode(text);
+      return tokens.length;
+    } catch (error) {
+      console.warn(`Failed to estimate token count: ${error}`);
+      // Fallback to a rough estimate based on characters
+      return Math.ceil(text.length / 4); // Rough estimate: 4 chars per token
+    }
+  }
+
+  /**
+   * Validate that a chunk's token count is within acceptable bounds.
+   * @param tokenCount The token count to validate
+   * @param chunkText The text of the chunk (for error messages)
+   * @throws Error if token count is invalid
+   */
+  private _validateTokenCount(tokenCount: number, chunkText: string): void {
+    if (tokenCount <= 0) {
+      throw new Error(`Invalid token count ${tokenCount} for chunk: ${chunkText}`);
+    }
+    if (tokenCount > this.chunkSize) {
+      throw new Error(`Chunk exceeds maximum token size (${tokenCount} > ${this.chunkSize}): ${chunkText}`);
+    }
   }
 
   /**
@@ -187,6 +216,9 @@ export class TokenChunker extends BaseChunker {
       const text = chunkTexts[i];
       const overlapLength = overlapCharacterLengths[i];
       const tokenCount = tokenCounts[i];
+
+      // Validate token count
+      this._validateTokenCount(tokenCount, text);
 
       // Ensure indices are always valid
       const startIndex = Math.max(0, currentCharacterIndex);
