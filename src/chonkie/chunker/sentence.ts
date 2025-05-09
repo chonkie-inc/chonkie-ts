@@ -152,11 +152,15 @@ export class SentenceChunker extends BaseChunker {
 
     return callableFn as unknown as CallableSentenceChunker;
   }
+  
+
+  // NOTE: The replace + split method is not the best/most efficient way in general to be doing this. It works well in python because python implements .replace and .split in C while the re library is much slower in python. 
+  // TODO: Implement a more efficient method for splitting text into sentences.
 
   /**
    * Fast sentence splitting while maintaining accuracy.
    */
-  private _splitText(text: string): string[] {
+  public _splitText(text: string): string[] {
     let t = text;
     for (const c of this.delim) {
       if (this.includeDelim === "prev") {
@@ -176,25 +180,24 @@ export class SentenceChunker extends BaseChunker {
     let current = "";
 
     for (const s of splits) {
-      const trimmed = s.trim();
-      if (!trimmed) continue;
+      if (!s.trim()) continue;
 
       // If current is empty, start a new sentence
       if (!current) {
-        current = trimmed;
+        current = s;
       } else {
         // If the current sentence is already long enough, add it to sentences
         if (current.length >= this.minCharactersPerSentence) {
           sentences.push(current);
-          current = trimmed;
+          current = s;
         } else {
           // Only combine if the total length would be reasonable
-          const combinedLength = current.length + trimmed.length;
+          const combinedLength = current.length + s.length;
           if (combinedLength <= this.minCharactersPerSentence * 2) {
-            current += " " + trimmed;
+            current += " " + s;
           } else {
             sentences.push(current);
-            current = trimmed;
+            current = s;
           }
         }
       }
