@@ -40,10 +40,13 @@ Chonkie is a simple and easy to use library for chunking text. It is designed to
 import { TokenChunker } from 'chonkie';
 
 async function main() {
+  // Create a token chunker with default options
   const chunker = await TokenChunker.create();
-  
+
+  // Chunk a string
   const chunks = await chunker.chunk('Woah! Chonkie is such a great ts library!');
 
+  // Print the chunks
   for (const chunk of chunks) {
     console.log(chunk.text);
     console.log(chunk.token_count);
