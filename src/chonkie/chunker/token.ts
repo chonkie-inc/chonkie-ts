@@ -10,7 +10,7 @@ import { BaseChunker } from "./base";
 export interface TokenChunkerOptions {
   tokenizerOrName?: string | Tokenizer;
   chunkSize?: number;
-  overlap?: number;
+  chunkOverlap?: number;
   returnType?: "chunks" | "texts";
 }
 
@@ -29,17 +29,17 @@ export class TokenChunker extends BaseChunker {
   public readonly chunkOverlap: number; // This is the calculated integer value
   public readonly returnType: "chunks" | "texts";
 
-  /**
+  /** 
    * Private constructor. Use `TokenChunker.create()` to instantiate.
    * @param tokenizer The initialized tokenizer instance.
    * @param chunkSize Maximum number of tokens per chunk.
-   * @param overlap Calculated absolute number of tokens to overlap.
+   * @param chunkOverlap Calculated absolute number of tokens to overlap.
    * @param returnType Whether to return 'chunks' or 'texts'.
    */
   private constructor(
     tokenizer: Tokenizer,
     chunkSize: number,
-    overlap: number, // This is the already calculated integer overlap
+    chunkOverlap: number, // This is the already calculated integer overlap
     returnType: "chunks" | "texts"
   ) {
     super(tokenizer);
@@ -49,15 +49,15 @@ export class TokenChunker extends BaseChunker {
     }
     this.chunkSize = chunkSize;
 
-    if (overlap < 0) {
+    if (chunkOverlap < 0) {
       throw new Error("chunkOverlap must be non-negative.");
     }
-    if (overlap >= chunkSize) {
+    if (chunkOverlap >= chunkSize) {
       throw new Error(
         "chunkOverlap must be less than chunkSize."
       );
     }
-    this.chunkOverlap = overlap;
+    this.chunkOverlap = chunkOverlap;
 
     if (returnType !== "chunks" && returnType !== "texts") {
       throw new Error("returnType must be either 'chunks' or 'texts'.");
@@ -72,7 +72,7 @@ export class TokenChunker extends BaseChunker {
     const {
       tokenizerOrName = "EleutherAI/gpt-j-6b",
       chunkSize = 512,
-      overlap = 0,
+      chunkOverlap = 0,
       returnType = "chunks"
     } = options;
 
@@ -80,18 +80,18 @@ export class TokenChunker extends BaseChunker {
       throw new Error("chunkSize must be positive.");
     }
 
-    let calculatedOverlap: number;
-    if (overlap >= 0 && overlap < 1) {
-      calculatedOverlap = Math.floor(overlap * chunkSize);
+    let calculatedChunkOverlap: number;
+    if (chunkOverlap >= 0 && chunkOverlap < 1) {
+      calculatedChunkOverlap = Math.floor(chunkOverlap * chunkSize);
     } else {
-      calculatedOverlap = Math.floor(overlap);
+      calculatedChunkOverlap = Math.floor(chunkOverlap);
     }
 
     // Check for invalid overlap values
-    if (calculatedOverlap < 0) {
+    if (calculatedChunkOverlap < 0) {
       throw new Error("Calculated chunkOverlap must be non-negative.");
     }
-    if (calculatedOverlap >= chunkSize) {
+    if (calculatedChunkOverlap >= chunkSize) {
       throw new Error("Calculated chunkOverlap must be less than chunkSize.");
     }
 
@@ -110,7 +110,7 @@ export class TokenChunker extends BaseChunker {
       throw new Error(`Failed to initialize tokenizer: ${error}`);
     }
 
-    const plainInstance = new TokenChunker(tokenizerInstance, chunkSize, calculatedOverlap, returnType);
+    const plainInstance = new TokenChunker(tokenizerInstance, chunkSize, calculatedChunkOverlap, returnType);
 
     // Create the callable function wrapper
     const callableFn = function (

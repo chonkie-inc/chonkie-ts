@@ -1,4 +1,4 @@
-import { Context, Chunk } from '../../chonkie/types/base';
+import { Context, Chunk } from '../../src/chonkie/types/base';
 
 describe('Context', () => {
   it('should initialize correctly', () => {
