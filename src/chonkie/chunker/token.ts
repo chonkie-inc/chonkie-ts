@@ -70,7 +70,7 @@ export class TokenChunker extends BaseChunker {
    */
   public static async create(options: TokenChunkerOptions = {}): Promise<CallableTokenChunker> {
     const {
-      tokenizerOrName = "google-bert/bert-base-uncased",
+      tokenizerOrName = "EleutherAI/gpt-j-6b",
       chunkSize = 512,
       overlap = 0,
       returnType = "chunks"
