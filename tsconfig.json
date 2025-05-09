@@ -10,7 +10,12 @@
     "declaration": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "chonkie": ["src/chonkie/chunker"],
+      "chonkie/cloud": ["src/chonkie/cloud"]
+    }
   },
   "include": [
     "src/**/*"
@@ -18,6 +23,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/tests/"
+    "src/tests/",
+    "demo"
   ]
 }
