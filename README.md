@@ -4,10 +4,13 @@
 
 # 🦛 chonkie-ts ✨
 
+<!-- Add badges here (also add links for the badges to the npm page) -->
 ![npm badge](https://img.shields.io/npm/v/chonkie)
 ![npm downloads](https://img.shields.io/npm/dt/chonkie)
 ![npm license](https://img.shields.io/npm/l/chonkie)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/chonkie)
+![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)
+<!-- Add the discord badge here, stars -->
 
 _🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library._
 
