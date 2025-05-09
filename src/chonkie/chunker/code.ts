@@ -180,7 +180,58 @@ export class CodeChunker extends BaseChunker {
       groupTokenCounts.push(currentTokenCount);
     }
 
-    return [nodeGroups, groupTokenCounts];
+    // Calculate cumulative token counts for optimal grouping
+    const cumulativeTokenCounts = [0];
+    for (const count of groupTokenCounts) {
+      cumulativeTokenCounts.push(cumulativeTokenCounts[cumulativeTokenCounts.length - 1] + count);
+    }
+
+    // Merge groups optimally using binary search
+    const mergedNodeGroups: TreeSitterNode[][] = [];
+    const mergedTokenCounts: number[] = [];
+    let pos = 0;
+
+    while (pos < nodeGroups.length) {
+      const startCumulativeCount = cumulativeTokenCounts[pos];
+      const requiredCumulativeTarget = startCumulativeCount + this.chunkSize;
+
+      // Find the optimal split point using binary search
+      let index = this._bisectLeft(cumulativeTokenCounts, requiredCumulativeTarget, pos) - 1;
+      index = Math.min(index, nodeGroups.length);
+
+      // Handle edge cases
+      if (index === pos) {
+        index = pos + 1;
+      }
+
+      // Merge the groups
+      const groupsToMerge = nodeGroups.slice(pos, index);
+      mergedNodeGroups.push(this._mergeNodeGroups(groupsToMerge));
+
+      // Calculate the actual token count for this merged group
+      const actualMergedCount = cumulativeTokenCounts[index] - cumulativeTokenCounts[pos];
+      mergedTokenCounts.push(actualMergedCount);
+
+      pos = index;
+    }
+
+    return [mergedNodeGroups, mergedTokenCounts];
+  }
+
+  /**
+   * Binary search to find the first index where the value is greater than or equal to the target.
+   */
+  private _bisectLeft(arr: number[], target: number, lo: number = 0): number {
+    let hi = arr.length;
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (arr[mid] < target) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    return lo;
   }
 
   /**
@@ -305,9 +356,9 @@ export class CodeChunker extends BaseChunker {
         return this._createChunks(texts, tokenCounts, nodeGroups);
       }
     } finally {
-      if (!this.includeNodes && tree) {
-        // Clean up if nodes are not needed
-        (tree as any).delete();
+      // No need to explicitly delete the tree - it will be garbage collected
+      if (!this.includeNodes) {
+        tree = null;
       }
     }
   }

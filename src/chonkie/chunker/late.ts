@@ -112,7 +112,7 @@ export class LateChunker extends BaseChunker {
       chunkSize = 512,
       chunkOverlap = 0,
       returnType = "chunks",
-      embeddingModel
+      embeddingModel = "all-MiniLM-L6-v2"
     } = options;
 
     let tokenizerInstance: Tokenizer;
