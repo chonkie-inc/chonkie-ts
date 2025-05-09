@@ -6,6 +6,17 @@ import { LateChunk } from "../types/late";
 import { BaseChunker } from "./base";
 
 /**
+ * Options for creating a LateChunker instance.
+ */
+export interface LateChunkerOptions {
+  tokenizerOrName?: string | Tokenizer;
+  chunkSize?: number;
+  chunkOverlap?: number;
+  returnType?: "chunks" | "texts";
+  embeddingModel?: string;
+}
+
+/**
  * Represents a LateChunker instance that is also directly callable.
  * Calling it executes its `call` method (from BaseChunker), which
  * in turn calls `chunk` or `chunkBatch`.
@@ -95,13 +106,15 @@ export class LateChunker extends BaseChunker {
   /**
    * Creates and initializes a LateChunker instance that is directly callable.
    */
-  public static async create(
-    tokenizerOrName: string | Tokenizer = "gpt2",
-    chunkSize: number = 512,
-    chunkOverlap: number = 0,
-    returnType: "chunks" | "texts" = "chunks",
-    embeddingModel?: string
-  ): Promise<CallableLateChunker> {
+  public static async create(options: LateChunkerOptions = {}): Promise<CallableLateChunker> {
+    const {
+      tokenizerOrName = "gpt2",
+      chunkSize = 512,
+      chunkOverlap = 0,
+      returnType = "chunks",
+      embeddingModel
+    } = options;
+
     let tokenizerInstance: Tokenizer;
     if (typeof tokenizerOrName === 'string') {
       tokenizerInstance = await Tokenizer.create(tokenizerOrName);

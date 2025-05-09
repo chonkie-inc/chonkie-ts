@@ -8,6 +8,17 @@ import Parser from "tree-sitter";
 import { Language } from "tree-sitter";
 
 /**
+ * Options for creating a CodeChunker instance.
+ */
+export interface CodeChunkerOptions {
+  tokenizerOrName?: string | Tokenizer;
+  chunkSize?: number;
+  returnType?: "chunks" | "texts";
+  lang?: string;
+  includeNodes?: boolean;
+}
+
+/**
  * Represents a CodeChunker instance that is also directly callable.
  * Calling it executes its `call` method (from BaseChunker), which
  * in turn calls `chunk` or `chunkBatch`.
@@ -53,13 +64,15 @@ export class CodeChunker extends BaseChunker {
   /**
    * Creates and initializes a CodeChunker instance that is directly callable.
    */
-  public static async create(
-    tokenizerOrName: string | Tokenizer = "gpt2",
-    chunkSize: number = 512,
-    returnType: "chunks" | "texts" = "chunks",
-    lang?: string,
-    includeNodes: boolean = false
-  ): Promise<CallableCodeChunker> {
+  public static async create(options: CodeChunkerOptions = {}): Promise<CallableCodeChunker> {
+    const {
+      tokenizerOrName = "gpt2",
+      chunkSize = 512,
+      returnType = "chunks",
+      lang,
+      includeNodes = false
+    } = options;
+
     let tokenizerInstance: Tokenizer;
     if (typeof tokenizerOrName === 'string') {
       tokenizerInstance = await Tokenizer.create(tokenizerOrName);

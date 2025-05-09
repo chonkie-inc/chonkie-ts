@@ -6,6 +6,17 @@ import { RecursiveChunk, RecursiveLevel, RecursiveRules } from "../types/recursi
 import { BaseChunker } from "./base";
 
 /**
+ * Options for creating a RecursiveChunker instance.
+ */
+export interface RecursiveChunkerOptions {
+  tokenizerOrName?: string | Tokenizer;
+  chunkSize?: number;
+  rules?: RecursiveRules;
+  minCharactersPerChunk?: number;
+  returnType?: "chunks" | "texts";
+}
+
+/**
  * Represents a RecursiveChunker instance that is also directly callable.
  * Calling it executes its `call` method (from BaseChunker), which
  * in turn calls `chunk` or `chunkBatch`.
@@ -58,13 +69,15 @@ export class RecursiveChunker extends BaseChunker {
   /**
    * Creates and initializes a RecursiveChunker instance that is directly callable.
    */
-  public static async create(
-    tokenizerOrName: string | Tokenizer = "gpt2",
-    chunkSize: number = 512,
-    rules: RecursiveRules = new RecursiveRules(),
-    minCharactersPerChunk: number = 24,
-    returnType: "chunks" | "texts" = "chunks"
-  ): Promise<CallableRecursiveChunker> {
+  public static async create(options: RecursiveChunkerOptions = {}): Promise<CallableRecursiveChunker> {
+    const {
+      tokenizerOrName = "gpt2",
+      chunkSize = 512,
+      rules = new RecursiveRules(),
+      minCharactersPerChunk = 24,
+      returnType = "chunks"
+    } = options;
+
     let tokenizerInstance: Tokenizer;
     if (typeof tokenizerOrName === 'string') {
       tokenizerInstance = await Tokenizer.create(tokenizerOrName);

@@ -6,6 +6,21 @@ import { Sentence, SentenceChunk } from "../types/sentence";
 import { BaseChunker } from "./base";
 
 /**
+ * Options for creating a SentenceChunker instance.
+ */
+export interface SentenceChunkerOptions {
+  tokenizerOrName?: string | Tokenizer;
+  chunkSize?: number;
+  chunkOverlap?: number;
+  minSentencesPerChunk?: number;
+  minCharactersPerSentence?: number;
+  approximate?: boolean;
+  delim?: string[];
+  includeDelim?: "prev" | "next" | null;
+  returnType?: "chunks" | "texts";
+}
+
+/**
  * Represents a SentenceChunker instance that is also directly callable.
  * Calling it executes its `call` method (from BaseChunker), which
  * in turn calls `chunk` or `chunkBatch`.
@@ -43,16 +58,19 @@ export class SentenceChunker extends BaseChunker {
     super(tokenizer);
 
     if (chunkSize <= 0) {
-      throw new Error("chunkSize must be positive");
+      throw new Error("chunkSize must be greater than 0");
+    }
+    if (chunkOverlap < 0) {
+      throw new Error("chunkOverlap must be non-negative");
     }
     if (chunkOverlap >= chunkSize) {
       throw new Error("chunkOverlap must be less than chunkSize");
     }
-    if (minSentencesPerChunk < 1) {
-      throw new Error("minSentencesPerChunk must be at least 1");
+    if (minSentencesPerChunk <= 0) {
+      throw new Error("minSentencesPerChunk must be greater than 0");
     }
-    if (minCharactersPerSentence < 1) {
-      throw new Error("minCharactersPerSentence must be at least 1");
+    if (minCharactersPerSentence <= 0) {
+      throw new Error("minCharactersPerSentence must be greater than 0");
     }
     if (!delim) {
       throw new Error("delim must be a list of strings or a string");
@@ -61,7 +79,7 @@ export class SentenceChunker extends BaseChunker {
       throw new Error("includeDelim must be 'prev', 'next' or null");
     }
     if (returnType !== "chunks" && returnType !== "texts") {
-      throw new Error("Invalid returnType. Must be either 'chunks' or 'texts'.");
+      throw new Error("returnType must be either 'chunks' or 'texts'");
     }
     if (approximate) {
       console.warn("Approximate has been deprecated and will be removed from next version onwards!");
@@ -81,17 +99,19 @@ export class SentenceChunker extends BaseChunker {
   /**
    * Creates and initializes a SentenceChunker instance that is directly callable.
    */
-  public static async create(
-    tokenizerOrName: string | Tokenizer = "gpt2",
-    chunkSize: number = 512,
-    chunkOverlap: number = 0,
-    minSentencesPerChunk: number = 1,
-    minCharactersPerSentence: number = 12,
-    approximate: boolean = false,
-    delim: string[] = [". ", "! ", "? ", "\n"],
-    includeDelim: "prev" | "next" | null = "prev",
-    returnType: "chunks" | "texts" = "chunks"
-  ): Promise<CallableSentenceChunker> {
+  public static async create(options: SentenceChunkerOptions = {}): Promise<CallableSentenceChunker> {
+    const {
+      tokenizerOrName = "gpt2",
+      chunkSize = 512,
+      chunkOverlap = 0,
+      minSentencesPerChunk = 1,
+      minCharactersPerSentence = 12,
+      approximate = false,
+      delim = [". ", "! ", "? ", "\n"],
+      includeDelim = "prev",
+      returnType = "chunks"
+    } = options;
+
     let tokenizerInstance: Tokenizer;
     if (typeof tokenizerOrName === 'string') {
       tokenizerInstance = await Tokenizer.create(tokenizerOrName);
@@ -149,32 +169,38 @@ export class SentenceChunker extends BaseChunker {
     }
 
     // Initial split
-    const splits = t.split(this.sep).filter(s => s !== "");
+    const splits = t.split(this.sep).filter(s => s.trim() !== "");
 
-    // Combine short splits with previous sentence
-    let current = "";
+    // Process splits to form sentences
     const sentences: string[] = [];
-    for (const s of splits) {
-      // If the split is short, add to current and if long add to sentences
-      if (s.length < this.minCharactersPerSentence) {
-        current += s;
-      } else if (current) {
-        current += s;
-        sentences.push(current);
-        current = "";
-      } else {
-        sentences.push(s);
-      }
+    let current = "";
 
-      // At any point if the current sentence is longer than the min_characters_per_sentence,
-      // add it to the sentences
-      if (current.length >= this.minCharactersPerSentence) {
-        sentences.push(current);
-        current = "";
+    for (const s of splits) {
+      const trimmed = s.trim();
+      if (!trimmed) continue;
+
+      // If current is empty, start a new sentence
+      if (!current) {
+        current = trimmed;
+      } else {
+        // If the current sentence is already long enough, add it to sentences
+        if (current.length >= this.minCharactersPerSentence) {
+          sentences.push(current);
+          current = trimmed;
+        } else {
+          // Only combine if the total length would be reasonable
+          const combinedLength = current.length + trimmed.length;
+          if (combinedLength <= this.minCharactersPerSentence * 2) {
+            current += " " + trimmed;
+          } else {
+            sentences.push(current);
+            current = trimmed;
+          }
+        }
       }
     }
 
-    // If there is a current split, add it to the sentences
+    // Add the last sentence if it exists
     if (current) {
       sentences.push(current);
     }

@@ -5,6 +5,16 @@ import { Chunk } from "../types/base";
 import { BaseChunker } from "./base";
 
 /**
+ * Options for creating a TokenChunker instance.
+ */
+export interface TokenChunkerOptions {
+  tokenizerOrName?: string | Tokenizer;
+  chunkSize?: number;
+  overlap?: number;
+  returnType?: "chunks" | "texts";
+}
+
+/**
  * Represents a TokenChunker instance that is also directly callable.
  * Calling it executes its `call` method (from BaseChunker), which
  * in turn calls `chunk` or `chunkBatch`.
@@ -57,21 +67,15 @@ export class TokenChunker extends BaseChunker {
 
   /**
    * Creates and initializes a TokenChunker instance that is directly callable.
-   * @param tokenizerOrName Tokenizer identifier (e.g., "google-bert/bert-base-uncased")
-   * @param chunkSize Maximum number of tokens per chunk. Defaults to 512.
-   * @param overlap Number of tokens to overlap between chunks.
-   *                If 0 <= overlap < 1, it's treated as a percentage of chunkSize.
-   *                Otherwise, it's treated as an absolute number of tokens. Defaults to 0.
-   * @param returnType Whether to return 'chunks' (Chunk objects) or 'texts' (strings). Defaults to "chunks".
-   * @returns A Promise that resolves to a callable TokenChunker instance.
-   * @throws Error if chunkSize <= 0, calculated chunkOverlap is invalid, or returnType is invalid.
    */
-  public static async create(
-    tokenizerOrName: string | Tokenizer = "google-bert/bert-base-uncased",
-    chunkSize: number = 512,
-    overlap: number = 0,
-    returnType: "chunks" | "texts" = "chunks"
-  ): Promise<CallableTokenChunker> {
+  public static async create(options: TokenChunkerOptions = {}): Promise<CallableTokenChunker> {
+    const {
+      tokenizerOrName = "google-bert/bert-base-uncased",
+      chunkSize = 512,
+      overlap = 0,
+      returnType = "chunks"
+    } = options;
+
     if (chunkSize <= 0) {
       throw new Error("chunkSize must be positive.");
     }

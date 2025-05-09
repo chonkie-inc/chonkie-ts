@@ -13,7 +13,7 @@
     "types": ["jest", "node"],
     "baseUrl": ".",
     "paths": {
-      "chonkie": ["src/chonkie/chunker"],
+      "chonkie": ["src/chonkie"],
       "chonkie/cloud": ["src/chonkie/cloud"]
     }
   },

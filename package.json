@@ -2,12 +2,12 @@
   "name": "chonkie",
   "version": "0.0.3",
   "description": "Chonkie module",
-  "main": "dist/chonkie/chunker/index.js",
-  "types": "dist/chonkie/chunker/index.d.ts",
+  "main": "dist/chonkie/index.js",
+  "types": "dist/chonkie/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/chonkie/chunker/index.d.ts",
-      "default": "./dist/chonkie/chunker/index.js"
+      "types": "./dist/chonkie/index.d.ts",
+      "default": "./dist/chonkie/index.js"
     },
     "./cloud": {
       "types": "./dist/chonkie/cloud/index.d.ts",
