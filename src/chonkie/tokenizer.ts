@@ -19,14 +19,23 @@ export type CallableTokenizer = {
 };
 
 /**
- * Base class for Character and Word tokenizers.
+ * @abstract
+ * Base class for tokenizers, providing a foundational structure for text tokenization.
+ * It manages a vocabulary of tokens and their corresponding IDs.
+ * This class is intended to be extended by specific tokenizer implementations
+ * (e.g., CharacterTokenizer, WordTokenizer).
+ *
+ * @property {string[]} vocab - An array storing the tokens in the vocabulary.
+ * @property {Map<string, number>} token2id - A map that stores the mapping from tokens (strings) to their unique IDs (numbers).
  */
 export abstract class BaseTokenizer {
     vocab: string[];
     token2id: Map<string, number>;
 
     /**
-     * Initialize the BaseTokenizer.
+     * Initializes the BaseTokenizer.
+     * Sets up an empty vocabulary (`this.vocab`) and an empty token-to-ID map (`this.token2id`).
+     * It also adds a space character (" ") as the initial token to the vocabulary.
      */
     constructor() {
         this.vocab = [];
