@@ -2,7 +2,7 @@
 
 ![Chonkie Logo](./assets/chonkie_logo_br_transparent_bg.png)
 
-# 🦛 Chonkie-ts ✨
+# 🦛 chonkie-ts ✨
 
 ![npm badge](https://img.shields.io/npm/v/chonkie)
 ![npm downloads](https://img.shields.io/npm/dt/chonkie)
