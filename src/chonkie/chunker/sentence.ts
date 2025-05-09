@@ -155,6 +155,7 @@ export class SentenceChunker extends BaseChunker {
   
 
   // NOTE: The replace + split method is not the best/most efficient way in general to be doing this. It works well in python because python implements .replace and .split in C while the re library is much slower in python. 
+  // NOTE: The new split -> join -> split is so weird, but it works. I don't quite like it however.
   // TODO: Implement a more efficient method for splitting text into sentences.
 
   /**
