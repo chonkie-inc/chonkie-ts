@@ -33,6 +33,11 @@
   "license": "MIT",
   "dependencies": {
     "@huggingface/transformers": "^3.5.1",
-    "tokenizers": "^0.13.3"
+    "tokenizers": "^0.13.3",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-java": "^0.23.5",
+    "tree-sitter-javascript": "^0.23.1",
+    "tree-sitter-python": "^0.23.6",
+    "tree-sitter-typescript": "^0.23.2"
   }
 }

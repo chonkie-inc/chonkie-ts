@@ -85,13 +85,12 @@ export class TokenChunker extends BaseChunker {
           calculatedOverlap = Math.floor(overlap);
         }
 
+        // Check for invalid overlap values
         if (calculatedOverlap < 0) {
           throw new Error("Calculated chunkOverlap must be non-negative.");
         }
         if (calculatedOverlap >= chunkSize) {
-          throw new Error(
-            "Calculated chunkOverlap must be less than chunkSize."
-          );
+          throw new Error("Calculated chunkOverlap must be less than chunkSize.");
         }
 
         if (returnType !== "chunks" && returnType !== "texts") {
@@ -113,7 +112,11 @@ export class TokenChunker extends BaseChunker {
           textOrTexts: string | string[],
           showProgress?: boolean
         ) {
-          return this.call(textOrTexts as any, showProgress);
+          if (typeof textOrTexts === 'string') {
+            return plainInstance.call(textOrTexts, showProgress);
+          } else {
+            return plainInstance.call(textOrTexts, showProgress);
+          }
         };
 
         // Set the prototype so that 'instanceof TokenChunker' works
@@ -122,7 +125,7 @@ export class TokenChunker extends BaseChunker {
         // Copy all enumerable own properties from plainInstance to callableFn
         Object.assign(callableFn, plainInstance);
         
-        resolve(callableFn as CallableTokenChunker);
+        resolve(callableFn as unknown as CallableTokenChunker);
       } catch (error) {
         reject(error);
       }
@@ -185,7 +188,8 @@ export class TokenChunker extends BaseChunker {
       const overlapLength = overlapCharacterLengths[i];
       const tokenCount = tokenCounts[i];
 
-      const startIndex = currentCharacterIndex;
+      // Ensure indices are always valid
+      const startIndex = Math.max(0, currentCharacterIndex);
       const endIndex = startIndex + text.length;
 
       chunks.push(
@@ -197,7 +201,8 @@ export class TokenChunker extends BaseChunker {
         })
       );
 
-      currentCharacterIndex = endIndex - overlapLength;
+      // Ensure we don't go backwards in the text
+      currentCharacterIndex = Math.max(startIndex, endIndex - overlapLength);
     }
     return chunks;
   }
