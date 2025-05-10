@@ -84,14 +84,14 @@ main();
 |------|-------------|
 | `TokenChunker` | Splits text into fixed-size token chunks |
 | `SentenceChunker` | Splits text into chunks based on sentences.  |
-| `RecursiveChunker` (⚠️ Experimental) | Splits text hierarchically using customizable rules to create semantically meaningful chunks. |
+| `RecursiveChunker` | Splits text hierarchically using customizable rules to create semantically meaningful chunks. |
 
 ## Contributing
 
 Want to help grow Chonkie? Check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started! Whether you're fixing bugs, adding features, improving docs, or simply leaving a ⭐️ on the repo, every contribution helps make Chonkie a better CHONK for everyone.
 
 Remember: No contribution is too small for this tiny hippo!
-****
+
 ## Acknowledgements
 
 Chonkie would like to CHONK its way through a special thanks to all the users and contributors who have helped make this library what it is today! Your feedback, issue reports, and improvements have helped make Chonkie the CHONKIEST it can be.
