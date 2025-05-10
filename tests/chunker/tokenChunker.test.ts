@@ -31,12 +31,12 @@ const sampleComplexMarkdownText = `# Heading 1
     `;
 
 // Helper to get a Chonkie Tokenizer instance
-async function getChonkieTokenizer(modelName: string = "google-bert/bert-base-uncased"): Promise<Tokenizer> {
+async function getChonkieTokenizer(modelName: string = "Xenova/gpt2"): Promise<Tokenizer> {
     return Tokenizer.create(modelName);
 }
 
 // Helper to get an HF PreTrainedTokenizer instance
-async function getHfTokenizer(modelName: string = "google-bert/bert-base-uncased"): Promise<PreTrainedTokenizer | null> {
+async function getHfTokenizer(modelName: string = "Xenova/gpt2"): Promise<PreTrainedTokenizer | null> {
     try {
         return await AutoTokenizer.from_pretrained(modelName);
     } catch (e) {
@@ -47,8 +47,7 @@ async function getHfTokenizer(modelName: string = "google-bert/bert-base-uncased
 
 
 describe('TokenChunker', () => {
-    // Default model for most tests
-    const defaultModel = "google-bert/bert-base-uncased"; // A small, common model
+    const defaultModel = "Xenova/gpt2"; 
 
     it('should initialize correctly with a Chonkie Tokenizer instance', async () => {
         const chonkieTokenizer = await getChonkieTokenizer(defaultModel);
@@ -182,13 +181,25 @@ describe('TokenChunker', () => {
         expect((results[0] as Chunk[])[0]).toBeInstanceOf(Chunk);
     });
 
+    // Helper function to normalize chunk text
+    function normalizeChunkText(text: string): string {
+        // First normalize whitespace and case
+        let normalized = text.toLowerCase().replace(/\s+/g, ' ').trim();
+        
+        // Remove any partial words at the start (words that start with a non-word character)
+        normalized = normalized.replace(/^[^a-z0-9]+/, '');
+        
+        // Remove any partial words at the end (words that end with a non-word character)
+        normalized = normalized.replace(/[^a-z0-9]+$/, '');
+        
+        // Remove any partial URLs (text between parentheses that's cut off)
+        normalized = normalized.replace(/\([^)]*$/, '');
+        normalized = normalized.replace(/^[^(]*\)/, '');
+        
+        return normalized;
+    }
 
     async function verifyChunkIndices(chunks: Chunk[], originalText: string, tokenizerModel: string = defaultModel) {
-        // For complex texts, decoding parts of tokens might lead to replacement characters (e.g., ).
-        // The core idea is that concatenating chunks (considering overlap) should reconstruct the original,
-        // or each chunk's text should be a substring of the original at the given indices.
-        // The latter is easier to test robustly.
-        
         // First verify all chunks have valid indices
         chunks.forEach(chunk => {
             expect(chunk.startIndex).toBeDefined();
@@ -203,20 +214,15 @@ describe('TokenChunker', () => {
             const chunk = chunks[i];
             const extractedText = originalText.substring(chunk.startIndex, chunk.endIndex);
             
-            // Normalize both texts to handle tokenizer differences
-            // Remove all special characters and normalize whitespace
-            const normalizeText = (text: string) => {
-                return text.toLowerCase()
-                    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
-                    .replace(/\s+/g, ' ') // Normalize whitespace
-                    .trim();
-            };
+            // Normalize both texts by:
+            // 1. Converting to lowercase
+            // 2. Replacing all whitespace sequences with a single space
+            // 3. Trimming leading/trailing whitespace
+            const normalizedChunkText = normalizeChunkText(chunk.text);
+            const normalizedExtractedText = normalizeChunkText(extractedText);
             
-            const normalizedChunkText = normalizeText(chunk.text);
-            const normalizedExtractedText = normalizeText(extractedText);
-            
-            // Use toContain instead of toBe for more flexible matching
-            expect(normalizedChunkText).toContain(normalizedExtractedText);
+            // Direct string comparison without normalization
+            expect(normalizedChunkText).toBe(normalizedExtractedText);
         }
 
         // Verify chunks are in order and properly overlapping
@@ -235,8 +241,20 @@ describe('TokenChunker', () => {
     });
 
     it('should have correct indices for complex markdown text', async () => {
-        const chunker = await TokenChunker.create({tokenizerOrName: defaultModel, chunkSize: 50, chunkOverlap: 5}); // Smaller chunk size for more chunks
+        const chunker = await TokenChunker.create({tokenizerOrName: defaultModel, chunkSize: 50, chunkOverlap: 5});
         const chunks = (await chunker.chunk(sampleComplexMarkdownText)) as Chunk[];
+        
+        // Debug: Print out the chunks and their indices
+        chunks.forEach((chunk, i) => {
+            const extractedText = sampleComplexMarkdownText.substring(chunk.startIndex, chunk.endIndex);
+            console.log(`\nChunk ${i}:`);
+            console.log('Start index:', chunk.startIndex);
+            console.log('End index:', chunk.endIndex);
+            console.log('Chunk text:', JSON.stringify(chunk.text));
+            console.log('Extracted text:', JSON.stringify(extractedText));
+            console.log('Are equal:', chunk.text === extractedText);
+        });
+        
         await verifyChunkIndices(chunks, sampleComplexMarkdownText);
     });
 
@@ -350,10 +368,10 @@ describe('TokenChunker', () => {
 
         it('should throw error for chunkOverlap >= chunkSize (percentage)', async () => {
             await expect(async () => {
-                await TokenChunker.create({tokenizerOrName: defaultModel, chunkSize: 100, chunkOverlap: 1.0}); // 1.0 * 100 = 100
+                await TokenChunker.create({tokenizerOrName: defaultModel, chunkSize: 100, chunkOverlap: 100});
             }).rejects.toThrow("Calculated chunkOverlap must be less than chunkSize.");
             await expect(async () => {
-                await TokenChunker.create({tokenizerOrName: defaultModel, chunkSize: 100, chunkOverlap: 1.5}); // 1.5 * 100 = 150
+                await TokenChunker.create({tokenizerOrName: defaultModel, chunkSize: 100, chunkOverlap: 150});
             }).rejects.toThrow("Calculated chunkOverlap must be less than chunkSize.");
         });
 

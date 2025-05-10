@@ -164,7 +164,10 @@ export class TokenChunker extends BaseChunker {
 
     for (let start = 0; start < tokens.length; start += step) {
       const end = Math.min(start + this.chunkSize, tokens.length);
-      tokenGroups.push(tokens.slice(start, end));
+      // Only add the chunk if it's larger than the overlap (otherwise, it might be fully contained in the previous chunk)
+      if (end - start > this.chunkOverlap || start === 0) {
+        tokenGroups.push(tokens.slice(start, end));
+      }
     }
     return tokenGroups;
   }

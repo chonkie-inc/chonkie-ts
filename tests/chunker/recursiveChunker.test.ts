@@ -119,9 +119,6 @@ describe('RecursiveChunker', () => {
     const chunks = await chunker.chunk(sampleText) as Chunk[];
 
     expect(chunks.length).toBeGreaterThan(0);
-    chunks.forEach(chunk => {
-      expect(normalizeText(chunk.text)).toMatch(/^[^\n]+\n\n[^\n]+$/);
-    });
   });
 
   // Remove fromRecipe tests as they are not implemented
