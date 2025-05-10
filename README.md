@@ -9,6 +9,7 @@
 [![npm downloads](https://img.shields.io/npm/dt/chonkie)](https://www.npmjs.com/package/chonkie)
 [![npm license](https://img.shields.io/npm/l/chonkie)](https://www.npmjs.com/package/chonkie)
 [![npm bundle size](https://img.shields.io/bundlephobia/min/chonkie)](https://www.npmjs.com/package/chonkie)
+[![Documentation](https://img.shields.io/badge/docs-DOCS.md-blue.svg)](./DOCS.md)
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)](https://github.com/chonkie-inc/chonkie-ts)
 
