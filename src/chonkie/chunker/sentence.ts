@@ -157,6 +157,7 @@ export class SentenceChunker extends BaseChunker {
   // NOTE: The replace + split method is not the best/most efficient way in general to be doing this. It works well in python because python implements .replace and .split in C while the re library is much slower in python. 
   // NOTE: The new split -> join -> split is so weird, but it works. I don't quite like it however.
   // TODO: Implement a more efficient method for splitting text into sentences.
+  // TODO: Make sure before the final version to make the _splitText method private.
 
   /**
    * Fast sentence splitting while maintaining accuracy.
@@ -173,16 +174,14 @@ export class SentenceChunker extends BaseChunker {
       }
     }
 
-    // Initial split
-    const splits = t.split(this.sep).filter(s => s.trim() !== "");
+    // Initial split — No filter because we want to keep the delimiters
+    const splits = t.split(this.sep);
 
     // Process splits to form sentences
     const sentences: string[] = [];
     let current = "";
 
     for (const s of splits) {
-      if (!s.trim()) continue;
-
       // If current is empty, start a new sentence
       if (!current) {
           current = s;
@@ -192,7 +191,7 @@ export class SentenceChunker extends BaseChunker {
             sentences.push(current);
             current = s;
           } else {
-            current.concat(s); // Since s has the spaces in it already, it can be concatenated directly
+            current += s; // Since s has the spaces in it already, it can be concatenated directly
           }
         }
       }
