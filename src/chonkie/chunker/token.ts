@@ -135,22 +135,6 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Estimate the number of tokens in a text.
-   * @param text The text to estimate tokens for
-   * @returns A promise that resolves to the estimated number of tokens
-   */
-  private async _estimateTokenCount(text: string): Promise<number> {
-    try {
-      const tokens = await this.tokenizer.encode(text);
-      return tokens.length;
-    } catch (error) {
-      console.warn(`Failed to estimate token count: ${error}`);
-      // Fallback to a rough estimate based on characters
-      return Math.ceil(text.length / 4); // Rough estimate: 4 chars per token
-    }
-  }
-
-  /**
    * Validate that a chunk's token count is within acceptable bounds.
    * @param tokenCount The token count to validate
    * @param chunkText The text of the chunk (for error messages)
