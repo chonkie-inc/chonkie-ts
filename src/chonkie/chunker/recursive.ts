@@ -71,7 +71,7 @@ export class RecursiveChunker extends BaseChunker {
    */
   public static async create(options: RecursiveChunkerOptions = {}): Promise<CallableRecursiveChunker> {
     const {
-      tokenizerOrName = "EleutherAI/gpt-j-6b",
+      tokenizerOrName = "Xenova/gpt2",
       chunkSize = 512,
       rules = new RecursiveRules(),
       minCharactersPerChunk = 24,

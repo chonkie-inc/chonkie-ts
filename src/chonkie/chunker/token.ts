@@ -70,7 +70,7 @@ export class TokenChunker extends BaseChunker {
    */
   public static async create(options: TokenChunkerOptions = {}): Promise<CallableTokenChunker> {
     const {
-      tokenizerOrName = "EleutherAI/gpt-j-6b",
+      tokenizerOrName = "Xenova/gpt2",
       chunkSize = 512,
       chunkOverlap = 0,
       returnType = "chunks"

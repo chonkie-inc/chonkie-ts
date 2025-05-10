@@ -101,7 +101,7 @@ export class SentenceChunker extends BaseChunker {
    */
   public static async create(options: SentenceChunkerOptions = {}): Promise<CallableSentenceChunker> {
     const {
-      tokenizerOrName = "EleutherAI/gpt-j-6b",
+      tokenizerOrName = "Xenova/gpt2",
       chunkSize = 512,
       chunkOverlap = 0,
       minSentencesPerChunk = 1,
