@@ -4,7 +4,6 @@
 
 # 🦛 chonkie-ts ✨
 
-<!-- Add badges here (also add links for the badges to the npm page) -->
 [![npm badge](https://img.shields.io/npm/v/chonkie)](https://www.npmjs.com/package/chonkie)
 [![npm downloads](https://img.shields.io/npm/dt/chonkie)](https://www.npmjs.com/package/chonkie)
 [![npm license](https://img.shields.io/npm/l/chonkie)](https://www.npmjs.com/package/chonkie)
@@ -12,9 +11,6 @@
 [![Documentation](https://img.shields.io/badge/docs-DOCS.md-blue.svg)](./DOCS.md)
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)](https://github.com/chonkie-inc/chonkie-ts)
-
-<!-- Add the discord badge here, stars -->
-
 
 _🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library._
 
