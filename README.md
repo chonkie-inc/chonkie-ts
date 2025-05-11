@@ -12,7 +12,7 @@
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)](https://github.com/chonkie-inc/chonkie-ts)
 
-_🦛 CHONK your texts in TS with Chonkie!✨ The no-nonsense lightweight and efficient chunking library._
+_🦛 CHONK your texts in TypeScript with Chonkie!✨ The no-nonsense lightweight and efficient chunking library._
 
 [Installation](#-installation) •
 [Usage](#-usage) •
@@ -26,15 +26,16 @@ We built `chonkie-ts` while developing a TypeScript web app that needed fast, on
 
 **🚀 Feature-rich**: All the CHONKs you'd ever need </br>
 **✨ Easy to use**: Install, Import, CHONK </br>
-**⚡  Fast**: CHONK at the speed of TypeScript! zooooom...? (lol) </br>
+**⚡  Fast**: CHONK at the max speed of TypeScript! tssssooooooom </br>
 **🪶 Light-weight**: No bloat, just CHONK </br>
 **🦛 Cute CHONK mascot**: psst it's a pygmy hippo btw </br>
 **❤️ [Moto Moto](#acknowledgements)'s favorite TypeScript library** </br>
 
 **Chonkie** is a chunking library that "**just works**" ✨
 
-> !IMPORTANT
-> This library is a work in progress and is not yet feature-complete. We are currently working on adding more chunkers and improving the documentation.
+> [!NOTE]
+> This library is not a _binding_ but a _port_ of the original `chonkie` library written in Python, to TypeScript. This library is still under active development and not at feature parity with the original `chonkie` library yet. Please bear with us! 🫂
+
 ## 📦 Installation
 
 Simply install Chonkie using npm:
