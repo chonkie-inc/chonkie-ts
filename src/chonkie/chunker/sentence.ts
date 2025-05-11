@@ -101,7 +101,7 @@ export class SentenceChunker extends BaseChunker {
    */
   public static async create(options: SentenceChunkerOptions = {}): Promise<CallableSentenceChunker> {
     const {
-      tokenizerOrName = "gpt2",
+      tokenizerOrName = "Xenova/gpt2",
       chunkSize = 512,
       chunkOverlap = 0,
       minSentencesPerChunk = 1,
@@ -152,6 +152,11 @@ export class SentenceChunker extends BaseChunker {
 
     return callableFn as unknown as CallableSentenceChunker;
   }
+  
+
+  // NOTE: The replace + split method is not the best/most efficient way in general to be doing this. It works well in python because python implements .replace and .split in C while the re library is much slower in python. 
+  // NOTE: The new split -> join -> split is so weird, but it works. I don't quite like it however.
+  // TODO: Implement a more efficient method for splitting text into sentences.
 
   /**
    * Fast sentence splitting while maintaining accuracy.
@@ -160,45 +165,35 @@ export class SentenceChunker extends BaseChunker {
     let t = text;
     for (const c of this.delim) {
       if (this.includeDelim === "prev") {
-        t = t.replace(c, c + this.sep);
+        t = t.split(c).join(c + this.sep);
       } else if (this.includeDelim === "next") {
-        t = t.replace(c, this.sep + c);
+        t = t.split(c).join(this.sep + c);
       } else {
-        t = t.replace(c, this.sep);
+        t = t.split(c).join(this.sep);
       }
     }
 
-    // Initial split
-    const splits = t.split(this.sep).filter(s => s.trim() !== "");
+    // Initial split — No filter because we want to keep the delimiters
+    const splits = t.split(this.sep);
 
     // Process splits to form sentences
     const sentences: string[] = [];
     let current = "";
 
     for (const s of splits) {
-      const trimmed = s.trim();
-      if (!trimmed) continue;
-
       // If current is empty, start a new sentence
       if (!current) {
-        current = trimmed;
+          current = s;
       } else {
-        // If the current sentence is already long enough, add it to sentences
-        if (current.length >= this.minCharactersPerSentence) {
-          sentences.push(current);
-          current = trimmed;
-        } else {
-          // Only combine if the total length would be reasonable
-          const combinedLength = current.length + trimmed.length;
-          if (combinedLength <= this.minCharactersPerSentence * 2) {
-            current += " " + trimmed;
-          } else {
+          // If the current sentence is already long enough, add it to sentences
+          if (current.length >= this.minCharactersPerSentence) {
             sentences.push(current);
-            current = trimmed;
+            current = s;
+          } else {
+            current += s; // Since s has the spaces in it already, it can be concatenated directly
           }
         }
       }
-    }
 
     // Add the last sentence if it exists
     if (current) {

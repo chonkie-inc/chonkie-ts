@@ -10,7 +10,7 @@ import { BaseChunker } from "./base";
 export interface TokenChunkerOptions {
   tokenizerOrName?: string | Tokenizer;
   chunkSize?: number;
-  overlap?: number;
+  chunkOverlap?: number;
   returnType?: "chunks" | "texts";
 }
 
@@ -29,17 +29,17 @@ export class TokenChunker extends BaseChunker {
   public readonly chunkOverlap: number; // This is the calculated integer value
   public readonly returnType: "chunks" | "texts";
 
-  /**
+  /** 
    * Private constructor. Use `TokenChunker.create()` to instantiate.
    * @param tokenizer The initialized tokenizer instance.
    * @param chunkSize Maximum number of tokens per chunk.
-   * @param overlap Calculated absolute number of tokens to overlap.
+   * @param chunkOverlap Calculated absolute number of tokens to overlap.
    * @param returnType Whether to return 'chunks' or 'texts'.
    */
   private constructor(
     tokenizer: Tokenizer,
     chunkSize: number,
-    overlap: number, // This is the already calculated integer overlap
+    chunkOverlap: number, // This is the already calculated integer overlap
     returnType: "chunks" | "texts"
   ) {
     super(tokenizer);
@@ -49,15 +49,15 @@ export class TokenChunker extends BaseChunker {
     }
     this.chunkSize = chunkSize;
 
-    if (overlap < 0) {
+    if (chunkOverlap < 0) {
       throw new Error("chunkOverlap must be non-negative.");
     }
-    if (overlap >= chunkSize) {
+    if (chunkOverlap >= chunkSize) {
       throw new Error(
         "chunkOverlap must be less than chunkSize."
       );
     }
-    this.chunkOverlap = overlap;
+    this.chunkOverlap = chunkOverlap;
 
     if (returnType !== "chunks" && returnType !== "texts") {
       throw new Error("returnType must be either 'chunks' or 'texts'.");
@@ -70,9 +70,9 @@ export class TokenChunker extends BaseChunker {
    */
   public static async create(options: TokenChunkerOptions = {}): Promise<CallableTokenChunker> {
     const {
-      tokenizerOrName = "google-bert/bert-base-uncased",
+      tokenizerOrName = "Xenova/gpt2",
       chunkSize = 512,
-      overlap = 0,
+      chunkOverlap = 0,
       returnType = "chunks"
     } = options;
 
@@ -80,18 +80,18 @@ export class TokenChunker extends BaseChunker {
       throw new Error("chunkSize must be positive.");
     }
 
-    let calculatedOverlap: number;
-    if (overlap >= 0 && overlap < 1) {
-      calculatedOverlap = Math.floor(overlap * chunkSize);
+    let calculatedChunkOverlap: number;
+    if (chunkOverlap >= 0 && chunkOverlap < 1) {
+      calculatedChunkOverlap = Math.floor(chunkOverlap * chunkSize);
     } else {
-      calculatedOverlap = Math.floor(overlap);
+      calculatedChunkOverlap = Math.floor(chunkOverlap);
     }
 
     // Check for invalid overlap values
-    if (calculatedOverlap < 0) {
+    if (calculatedChunkOverlap < 0) {
       throw new Error("Calculated chunkOverlap must be non-negative.");
     }
-    if (calculatedOverlap >= chunkSize) {
+    if (calculatedChunkOverlap >= chunkSize) {
       throw new Error("Calculated chunkOverlap must be less than chunkSize.");
     }
 
@@ -110,7 +110,7 @@ export class TokenChunker extends BaseChunker {
       throw new Error(`Failed to initialize tokenizer: ${error}`);
     }
 
-    const plainInstance = new TokenChunker(tokenizerInstance, chunkSize, calculatedOverlap, returnType);
+    const plainInstance = new TokenChunker(tokenizerInstance, chunkSize, calculatedChunkOverlap, returnType);
 
     // Create the callable function wrapper
     const callableFn = function (
@@ -132,22 +132,6 @@ export class TokenChunker extends BaseChunker {
     Object.assign(callableFn, plainInstance);
     
     return callableFn as unknown as CallableTokenChunker;
-  }
-
-  /**
-   * Estimate the number of tokens in a text.
-   * @param text The text to estimate tokens for
-   * @returns A promise that resolves to the estimated number of tokens
-   */
-  private async _estimateTokenCount(text: string): Promise<number> {
-    try {
-      const tokens = await this.tokenizer.encode(text);
-      return tokens.length;
-    } catch (error) {
-      console.warn(`Failed to estimate token count: ${error}`);
-      // Fallback to a rough estimate based on characters
-      return Math.ceil(text.length / 4); // Rough estimate: 4 chars per token
-    }
   }
 
   /**
@@ -180,7 +164,10 @@ export class TokenChunker extends BaseChunker {
 
     for (let start = 0; start < tokens.length; start += step) {
       const end = Math.min(start + this.chunkSize, tokens.length);
-      tokenGroups.push(tokens.slice(start, end));
+      // Only add the chunk if it's larger than the overlap (otherwise, it might be fully contained in the previous chunk)
+      if (end - start > this.chunkOverlap || start === 0) {
+        tokenGroups.push(tokens.slice(start, end));
+      }
     }
     return tokenGroups;
   }

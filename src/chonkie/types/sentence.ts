@@ -1,5 +1,8 @@
 import { Chunk } from './base';
 
+
+// TODO: Figure out a way for the SentenceChunk to be able to visualize the sentence in the chunk when a console.log is called — for some reason it just shows up as [Sentence] right now. 
+
 /** Interface for Sentence data */
 interface SentenceData {
   text: string;
@@ -94,7 +97,8 @@ export class SentenceChunk extends Chunk {
 
   /** Return a string representation of the SentenceChunk */
   public toString(): string {
-    return `SentenceChunk(text=${this.text}, startIndex=${this.startIndex}, endIndex=${this.endIndex}, tokenCount=${this.tokenCount}, sentences=${this.sentences})`;
+    const sentencesStr = this.sentences.map(s => s.toString()).join(', ');
+    return `SentenceChunk(text=${this.text}, startIndex=${this.startIndex}, endIndex=${this.endIndex}, tokenCount=${this.tokenCount}, sentences=[${sentencesStr}])`;
   }
 
   /** Return the SentenceChunk as a dictionary-like object */

@@ -1,4 +1,8 @@
 // Re-export all types and chunkers
-export * from './types';
-export * from './chunker';
+export { Chunk, } from './types';
+export {
+    TokenChunker,
+    SentenceChunker,
+    RecursiveChunker
+} from './chunker';
 export { Visualizer } from './utils/viz'; 
