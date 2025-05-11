@@ -76,7 +76,9 @@ async function main() {
 main();
 ```
 
-## Chunkers 
+More examples can be found in the [DOCS](./DOCS.md) or in the [examples](./examples) folder.
+
+## Chunkers
 
 `chonkie-ts` is currently a work in progress and does not have feature parity with the original `chonkie` library yet. Here's an overview of the chunkers that are currently implemented:
 
