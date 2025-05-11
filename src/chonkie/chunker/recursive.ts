@@ -9,7 +9,7 @@ import { BaseChunker } from "./base";
  * Options for creating a RecursiveChunker instance.
  */
 export interface RecursiveChunkerOptions {
-  tokenizerOrName?: string | Tokenizer;
+  tokenizer?: string | Tokenizer;
   chunkSize?: number;
   rules?: RecursiveRules;
   minCharactersPerChunk?: number;
@@ -71,7 +71,7 @@ export class RecursiveChunker extends BaseChunker {
    */
   public static async create(options: RecursiveChunkerOptions = {}): Promise<CallableRecursiveChunker> {
     const {
-      tokenizerOrName = "Xenova/gpt2",
+      tokenizer = "Xenova/gpt2",
       chunkSize = 512,
       rules = new RecursiveRules(),
       minCharactersPerChunk = 24,
@@ -79,10 +79,10 @@ export class RecursiveChunker extends BaseChunker {
     } = options;
 
     let tokenizerInstance: Tokenizer;
-    if (typeof tokenizerOrName === 'string') {
-      tokenizerInstance = await Tokenizer.create(tokenizerOrName);
+    if (typeof tokenizer === 'string') {
+      tokenizerInstance = await Tokenizer.create(tokenizer);
     } else {
-      tokenizerInstance = tokenizerOrName;
+      tokenizerInstance = tokenizer;
     }
 
     const plainInstance = new RecursiveChunker(
