@@ -9,7 +9,7 @@ import { BaseChunker } from "./base";
  * Options for creating a SentenceChunker instance.
  */
 export interface SentenceChunkerOptions {
-  tokenizerOrName?: string | Tokenizer;
+  tokenizer?: string | Tokenizer;
   chunkSize?: number;
   chunkOverlap?: number;
   minSentencesPerChunk?: number;
@@ -101,7 +101,7 @@ export class SentenceChunker extends BaseChunker {
    */
   public static async create(options: SentenceChunkerOptions = {}): Promise<CallableSentenceChunker> {
     const {
-      tokenizerOrName = "Xenova/gpt2",
+      tokenizer = "Xenova/gpt2",
       chunkSize = 512,
       chunkOverlap = 0,
       minSentencesPerChunk = 1,
@@ -113,10 +113,10 @@ export class SentenceChunker extends BaseChunker {
     } = options;
 
     let tokenizerInstance: Tokenizer;
-    if (typeof tokenizerOrName === 'string') {
-      tokenizerInstance = await Tokenizer.create(tokenizerOrName);
+    if (typeof tokenizer === 'string') {
+      tokenizerInstance = await Tokenizer.create(tokenizer);
     } else {
-      tokenizerInstance = tokenizerOrName;
+      tokenizerInstance = tokenizer;
     }
 
     const plainInstance = new SentenceChunker(
