@@ -12,7 +12,7 @@
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)](https://github.com/chonkie-inc/chonkie-ts)
 
-_🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library._
+_🦛 CHONK your texts in TS with Chonkie!✨ The no-nonsense lightweight and efficient chunking library._
 
 [Installation](#-installation) •
 [Usage](#-usage) •
