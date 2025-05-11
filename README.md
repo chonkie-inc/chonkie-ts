@@ -22,7 +22,7 @@ _🦛 CHONK your texts in TS with Chonkie!✨ The no-nonsense lightweight and ef
 
 </div>
 
-Maaaaaan, i was building a typescript web app for myself which had RAG and I wanted to chunk my texts on the fly, fast. i kinda didn't enjoy using the other libraries out there, either to heavy or not flexible enough, so i just built this one.  🦛✨
+We built `chonkie-ts` while developing a TypeScript web app that needed fast, on-the-fly text chunking for RAG applications. After trying several existing libraries, we found them either too heavy or not flexible enough for our needs. `chonkie-ts` is a port of the original `chonkie` library, but with some type-safety and a few extra features to make it more useful for TypeScript developers!
 
 **🚀 Feature-rich**: All the CHONKs you'd ever need </br>
 **✨ Easy to use**: Install, Import, CHONK </br>
@@ -33,6 +33,8 @@ Maaaaaan, i was building a typescript web app for myself which had RAG and I wan
 
 **Chonkie** is a chunking library that "**just works**" ✨
 
+> !IMPORTANT
+> This library is a work in progress and is not yet feature-complete. We are currently working on adding more chunkers and improving the documentation.
 ## 📦 Installation
 
 Simply install Chonkie using npm:
