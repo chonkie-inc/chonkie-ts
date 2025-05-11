@@ -47,7 +47,7 @@ npm install chonkie
 Chonkie believes in having minimum default dependencies, and maximum flexibility, and so we have a lot of optional dependencies that you can opt out of if you don't need them. You can get the minimal install by running:
 
 ```bash
-npm install chonkie --no-optional
+npm install chonkie --omit=optional
 ```
 
 Learn more about the optional dependencies in the [DOCS.md](./DOCS.md) file.
