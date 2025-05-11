@@ -13,21 +13,21 @@ describe('SentenceChunker', () => {
   };
 
   it('should initialize correctly with default parameters', async () => {
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b'});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     expect(chunker).toBeDefined();
     expect(chunker.chunkSize).toBe(512);
     expect(chunker.returnType).toBe('chunks');
   });
 
   it('should initialize correctly with custom parameters', async () => {
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b', chunkSize: 256});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b', chunkSize: 256});
     expect(chunker).toBeDefined();
     expect(chunker.chunkSize).toBe(256);
     expect(chunker.returnType).toBe('chunks');
   });
 
   it('should chunk text correctly', async () => {
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b'});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     const chunks = await chunker.chunk(sampleText) as Chunk[];
 
     expect(Array.isArray(chunks)).toBe(true);
@@ -46,14 +46,14 @@ describe('SentenceChunker', () => {
   });
 
   it('should handle empty text', async () => {
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b'});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     const chunks = await chunker.chunk('');
     expect(chunks).toEqual([]);
   });
 
   it('should handle short text', async () => {
     const text = 'This is a short text, definitely shorter than the chunk size.';
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b'});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     const chunks = await chunker.chunk(text) as Chunk[];
 
     expect(chunks.length).toBe(1);
@@ -69,7 +69,7 @@ describe('SentenceChunker', () => {
   });
 
   it('should have correct indices for chunks', async () => {
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b'});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     const chunks = await chunker.chunk(sampleText) as Chunk[];
 
     let reconstructedText = '';
@@ -84,7 +84,7 @@ describe('SentenceChunker', () => {
 
   it('should have correct string representation', async () => {
     const text = 'This is a short text, definitely shorter than the chunk size.';
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b'});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     const chunks = await chunker.chunk(text) as Chunk[];
     if (chunks.length === 0) {
       return; // Skip if no chunks generated
@@ -100,7 +100,7 @@ describe('SentenceChunker', () => {
   });
 
   it('should respect chunk size limits', async () => {
-    const chunker = await SentenceChunker.create({tokenizerOrName: 'EleutherAI/gpt-j-6b', chunkSize: 100});
+    const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b', chunkSize: 100});
     const chunks = await chunker.chunk(sampleText) as Chunk[];
 
     chunks.forEach(chunk => {
