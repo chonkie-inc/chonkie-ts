@@ -1,5 +1,13 @@
 /** Custom base types for Chonkie. */
 
+/**
+ * Represents the data structure for a context object.
+ * 
+ * @property {string} text - The text of the chunk.
+ * @property {number} tokenCount - The number of tokens in the chunk.
+ * @property {number} [startIndex] - The starting index of the chunk in the original text.
+ * @property {number} [endIndex] - The ending index of the chunk in the original text.
+ */
 interface ContextData {
   text: string;
   tokenCount: number;
@@ -7,6 +15,14 @@ interface ContextData {
   endIndex?: number;
 }
 
+/**
+ * Represents a context object that contains information about a text chunk.
+ * 
+ * @property {string} text - The text of the chunk.
+ * @property {number} tokenCount - The number of tokens in the chunk.
+ * @property {number} [startIndex] - The starting index of the chunk in the original text.
+ * @property {number} [endIndex] - The ending index of the chunk in the original text.
+ */
 export class Context {
   /** The text of the chunk. */
   public text: string;
@@ -26,6 +42,13 @@ export class Context {
     this.validate();
   }
 
+  /**
+   * Validates the context object.
+   * 
+   * @throws {Error} If the text is not a string, the token count is negative,
+   *   the start index is negative, the end index is negative, or the start index
+   *   is greater than the end index. 
+   */
   private validate(): void {
     if (typeof this.text !== 'string') {
       throw new Error('Text must be a string.');
@@ -48,22 +71,34 @@ export class Context {
     }
   }
 
-  /** Return the length of the text. */
+  /** Return the length of the text. 
+   * 
+   * @returns {number} The length of the text.
+   */
   public get length(): number {
     return this.text.length;
   }
 
-  /** Return a string representation of the Context. */
+  /** Return a string representation of the Context. 
+   * 
+   * @returns {string} The text of the context.
+   */
   public toString(): string {
     return this.text;
   }
 
-  /** Return a detailed string representation of the Context. */
+  /** Return a detailed string representation of the Context. 
+   * 
+   * @returns {string} The detailed string representation of the Context.
+   */
   public toRepresentation(): string {
     return `Context(text='${this.text}', tokenCount=${this.tokenCount}, startIndex=${this.startIndex}, endIndex=${this.endIndex})`;
   }
 
-  /** Return the Context as a dictionary-like object. */
+  /** Return the Context as a dictionary-like object. 
+   * 
+   * @returns {ContextData} The dictionary-like object.
+   */
   public toDict(): ContextData {
     return {
       text: this.text,
@@ -73,12 +108,25 @@ export class Context {
     };
   }
 
-  /** Create a Context object from a dictionary-like object. */
+  /** Create a Context object from a dictionary-like object. 
+   * 
+   * @param {ContextData} data - The dictionary-like object.
+   * @returns {Context} The Context object.
+   */
   public static fromDict(data: ContextData): Context {
     return new Context(data);
   }
 }
 
+/**
+ * Represents the data structure for a chunk object.
+ * 
+ * @property {string} text - The text of the chunk.
+ * @property {number} startIndex - The starting index of the chunk in the original text.
+ * @property {number} endIndex - The ending index of the chunk in the original text.
+ * @property {number} tokenCount - The number of tokens in the chunk.
+ * @property {ContextData} [context] - The context metadata for the chunk.
+ */
 interface ChunkData {
   text: string;
   startIndex: number;
@@ -87,6 +135,15 @@ interface ChunkData {
   context?: ContextData;
 }
 
+/**
+ * Represents a chunk of text with associated metadata.
+ * 
+ * @property {string} text - The text of the chunk.
+ * @property {number} startIndex - The starting index of the chunk in the original text.
+ * @property {number} endIndex - The ending index of the chunk in the original text.
+ * @property {number} tokenCount - The number of tokens in the chunk.
+ * @property {Context} [context] - The context metadata for the chunk.
+ */
 export class Chunk {
   /** The text of the chunk. */
   public text: string;
@@ -99,6 +156,11 @@ export class Chunk {
   /** Optional context metadata for the chunk. */
   public context?: Context;
 
+  /**
+   * Constructs a new Chunk object.
+   * 
+   * @param {ChunkData} data - The data to construct the Chunk from.
+   */
   constructor(data: {
     text: string;
     startIndex: number;
@@ -121,17 +183,26 @@ export class Chunk {
     }
   }
 
-  /** Return the length of the text. */
+  /** Return the length of the text. 
+   * 
+   * @returns {number} The length of the text.
+   */
   public get length(): number {
     return this.text.length;
   }
 
-  /** Return a string representation of the Chunk. */
+  /** Return a string representation of the Chunk. 
+   * 
+   * @returns {string} The text of the chunk.
+   */
   public toString(): string {
     return this.text;
   }
 
-  /** Return a detailed string representation of the Chunk. */
+  /** Return a detailed string representation of the Chunk. 
+   * 
+   * @returns {string} The detailed string representation of the Chunk.
+   */
   public toRepresentation(): string {
     let repr = `Chunk(text='${this.text}', tokenCount=${this.tokenCount}, startIndex=${this.startIndex}, endIndex=${this.endIndex}`;
     if (this.context) {
@@ -142,19 +213,30 @@ export class Chunk {
     return repr;
   }
 
-  /** Return an iterator over the chunk's text. */
+  /** Return an iterator over the chunk's text. 
+   * 
+   * @returns {IterableIterator<string>} The iterator over the chunk's text.
+   */
   public *[Symbol.iterator](): IterableIterator<string> {
     for (let i = 0; i < this.text.length; i++) {
       yield this.text[i];
     }
   }
 
-  /** Return a slice of the chunk's text. */
+  /** Return a slice of the chunk's text. 
+   * 
+   * @param {number} [start] - The starting index of the slice.
+   * @param {number} [end] - The ending index of the slice.
+   * @returns {string} The slice of the chunk's text.
+   */
   public slice(start?: number, end?: number): string {
     return this.text.slice(start, end);
   }
 
-  /** Return the Chunk as a dictionary-like object. */
+  /** Return the Chunk as a dictionary-like object. 
+   * 
+   * @returns {ChunkData} The dictionary-like object.
+   */
   public toDict(): ChunkData {
     return {
       text: this.text,
@@ -165,7 +247,11 @@ export class Chunk {
     };
   }
 
-  /** Create a Chunk object from a dictionary-like object. */
+  /** Create a Chunk object from a dictionary-like object. 
+   * 
+   * @param {ChunkData} data - The dictionary-like object.
+   * @returns {Chunk} The Chunk object.
+   */
   public static fromDict(data: ChunkData): Chunk {
     return new Chunk({
       text: data.text,
@@ -176,7 +262,10 @@ export class Chunk {
     });
   }
 
-  /** Return a deep copy of the chunk. */
+  /** Return a deep copy of the chunk. 
+   * 
+   * @returns {Chunk} The deep copy of the chunk.
+   */
   public copy(): Chunk {
     return Chunk.fromDict(this.toDict());
   }
