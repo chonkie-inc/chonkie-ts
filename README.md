@@ -12,7 +12,7 @@
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)](https://github.com/chonkie-inc/chonkie-ts)
 
-_🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library._
+_🦛 CHONK your texts in TypeScript with Chonkie!✨ The no-nonsense lightweight and efficient chunking library._
 
 [Installation](#-installation) •
 [Usage](#-usage) •
@@ -22,16 +22,19 @@ _🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and eff
 
 </div>
 
-Maaaaaan, i was building a typescript web app for myself which had RAG and I wanted to chunk my texts on the fly, fast. i kinda didn't enjoy using the other libraries out there, either to heavy or not flexible enough, so i just built this one.  🦛✨
+We built `chonkie-ts` while developing a TypeScript web app that needed fast, on-the-fly text chunking for RAG applications. After trying several existing libraries, we found them either too heavy or not flexible enough for our needs. `chonkie-ts` is a port of the original `chonkie` library, but with some type-safety and a few extra features to make it more useful for TypeScript developers!
 
 **🚀 Feature-rich**: All the CHONKs you'd ever need </br>
 **✨ Easy to use**: Install, Import, CHONK </br>
-**⚡  Fast**: CHONK at the speed of TypeScript! zooooom...? (lol) </br>
+**⚡  Fast**: CHONK at the max speed of TypeScript! tssssooooooom </br>
 **🪶 Light-weight**: No bloat, just CHONK </br>
 **🦛 Cute CHONK mascot**: psst it's a pygmy hippo btw </br>
 **❤️ [Moto Moto](#acknowledgements)'s favorite TypeScript library** </br>
 
 **Chonkie** is a chunking library that "**just works**" ✨
+
+> [!NOTE]
+> This library is not a _binding_ but a _port_ of the original `chonkie` library written in Python, to TypeScript. This library is still under active development and not at feature parity with the original `chonkie` library yet. Please bear with us! 🫂
 
 ## 📦 Installation
 
@@ -44,7 +47,7 @@ npm install chonkie
 Chonkie believes in having minimum default dependencies, and maximum flexibility, and so we have a lot of optional dependencies that you can opt out of if you don't need them. You can get the minimal install by running:
 
 ```bash
-npm install chonkie --no-optional
+npm install chonkie --omit=optional
 ```
 
 Learn more about the optional dependencies in the [DOCS.md](./DOCS.md) file.
@@ -73,7 +76,9 @@ async function main() {
 main();
 ```
 
-## Chunkers 
+More examples can be found in the [DOCS](./DOCS.md) or in the [examples](./examples) folder.
+
+## Chunkers
 
 `chonkie-ts` is currently a work in progress and does not have feature parity with the original `chonkie` library yet. Here's an overview of the chunkers that are currently implemented:
 

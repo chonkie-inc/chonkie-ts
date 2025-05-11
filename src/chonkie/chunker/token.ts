@@ -6,9 +6,14 @@ import { BaseChunker } from "./base";
 
 /**
  * Options for creating a TokenChunker instance.
+ * @interface TokenChunkerOptions
+ * @property {string | Tokenizer} [tokenizer] - The tokenizer to use for chunking. Can be either a tokenizer name (defaults to "Xenova/gpt2") or an initialized Tokenizer instance.
+ * @property {number} [chunkSize] - The maximum number of tokens per chunk. Must be positive. Defaults to 512.
+ * @property {number} [chunkOverlap] - The number of tokens to overlap between chunks. Can be specified as a number (absolute tokens) or a decimal between 0 and 1 (percentage of chunkSize). Must be less than chunkSize. Defaults to 0.
+ * @property {"chunks" | "texts"} [returnType] - The type of output to return. "chunks" returns Chunk objects with metadata, while "texts" returns just the chunked text strings. Defaults to "chunks".
  */
 export interface TokenChunkerOptions {
-  tokenizerOrName?: string | Tokenizer;
+  tokenizer?: string | Tokenizer;
   chunkSize?: number;
   chunkOverlap?: number;
   returnType?: "chunks" | "texts";
@@ -18,23 +23,66 @@ export interface TokenChunkerOptions {
  * Represents a TokenChunker instance that is also directly callable.
  * Calling it executes its `call` method (from BaseChunker), which
  * in turn calls `chunk` or `chunkBatch`.
+ * 
+ * @typedef {Object} CallableTokenChunker
+ * @property {function(string, boolean=): Promise<Chunk[] | string[]>} - Single text chunking
+ * @property {function(string[], boolean=): Promise<(Chunk[] | string[])[]>} - Batch text chunking
+ * 
+ * @param {string | string[]} textOrTexts - The text or array of texts to chunk
+ * @param {boolean} [showProgress=true] - Whether to show progress during batch processing
+ * @returns {Promise<Chunk[] | string[] | (Chunk[] | string[])[]>} - Returns either:
+ *   - For single text: Promise resolving to array of Chunks or strings
+ *   - For batch: Promise resolving to array of chunk arrays
+ * 
+ * @example
+ * const chunker = await TokenChunker.create();
+ * // Single text chunking
+ * const chunks = await chunker("Hello world");
+ * // Batch chunking
+ * const batchChunks = await chunker(["Text 1", "Text 2"]);
  */
 export type CallableTokenChunker = TokenChunker & {
   (text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
   (texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
 };
 
+/**
+ * TokenChunker class extends BaseChunker and provides token-based text chunking functionality.
+ * This class splits text into overlapping chunks based on token counts, using a specified tokenizer.
+ * 
+ * @extends BaseChunker
+ * 
+ * @property {number} chunkSize - The maximum number of tokens per chunk
+ * @property {number} chunkOverlap - The number of tokens to overlap between chunks
+ * @property {"chunks" | "texts"} returnType - The type of output to return ("chunks" or "texts")
+ * 
+ * @method create - Creates and initializes a TokenChunker instance
+ * @method chunk - Splits a single text into overlapping chunks
+ * @method chunkBatch - Splits multiple texts into chunks
+ * @method toString - Returns a string representation of the TokenChunker
+ * 
+ * @example
+ * const chunker = await TokenChunker.create({
+ *   chunkSize: 512,
+ *   chunkOverlap: 50,
+ *   returnType: "chunks"
+ * });
+ * const chunks = await chunker.chunk("Your text here");
+ */
 export class TokenChunker extends BaseChunker {
   public readonly chunkSize: number;
   public readonly chunkOverlap: number; // This is the calculated integer value
   public readonly returnType: "chunks" | "texts";
 
-  /** 
-   * Private constructor. Use `TokenChunker.create()` to instantiate.
-   * @param tokenizer The initialized tokenizer instance.
-   * @param chunkSize Maximum number of tokens per chunk.
-   * @param chunkOverlap Calculated absolute number of tokens to overlap.
-   * @param returnType Whether to return 'chunks' or 'texts'.
+  /**
+   * Private constructor for TokenChunker.
+   * Use {@link TokenChunker.create} to instantiate this class.
+   *
+   * @param tokenizer - An initialized Tokenizer instance.
+   * @param chunkSize - Maximum number of tokens per chunk (must be positive).
+   * @param chunkOverlap - Number of tokens to overlap between chunks (must be non-negative and less than chunkSize).
+   * @param returnType - Output type: either 'chunks' (Chunk objects) or 'texts' (plain strings).
+   * @private
    */
   private constructor(
     tokenizer: Tokenizer,
@@ -66,11 +114,23 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Creates and initializes a TokenChunker instance that is directly callable.
+   * Asynchronously creates and initializes a TokenChunker instance that is directly callable as a function.
+   * 
+   * @param {TokenChunkerOptions} [options] - Configuration options for the TokenChunker.
+   * @param {string|Tokenizer} [options.tokenizer] - The tokenizer to use (name or instance). Defaults to "Xenova/gpt2".
+   * @param {number} [options.chunkSize] - Maximum number of tokens per chunk. Defaults to 512.
+   * @param {number} [options.chunkOverlap] - Number of tokens to overlap between chunks (absolute or fraction). Defaults to 0.
+   * @param {"chunks"|"texts"} [options.returnType] - Output type: "chunks" for Chunk objects, "texts" for plain strings. Defaults to "chunks".
+   * @returns {Promise<CallableTokenChunker>} A Promise that resolves to a callable TokenChunker instance.
+   * 
+   * @example
+   * const chunker = await TokenChunker.create({ chunkSize: 256, chunkOverlap: 32 });
+   * const chunks = await chunker("Some text to chunk");
+   * const batchChunks = await chunker(["Text 1", "Text 2"]);
    */
   public static async create(options: TokenChunkerOptions = {}): Promise<CallableTokenChunker> {
     const {
-      tokenizerOrName = "Xenova/gpt2",
+      tokenizer = "Xenova/gpt2",
       chunkSize = 512,
       chunkOverlap = 0,
       returnType = "chunks"
@@ -101,10 +161,10 @@ export class TokenChunker extends BaseChunker {
 
     let tokenizerInstance: Tokenizer;
     try {
-      if (typeof tokenizerOrName === 'string') {
-        tokenizerInstance = await Tokenizer.create(tokenizerOrName);
+      if (typeof tokenizer === 'string') {
+        tokenizerInstance = await Tokenizer.create(tokenizer);
       } else {
-        tokenizerInstance = tokenizerOrName;
+        tokenizerInstance = tokenizer;
       }
     } catch (error) {
       throw new Error(`Failed to initialize tokenizer: ${error}`);
@@ -135,10 +195,11 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Validate that a chunk's token count is within acceptable bounds.
-   * @param tokenCount The token count to validate
-   * @param chunkText The text of the chunk (for error messages)
-   * @throws Error if token count is invalid
+   * Validates that a chunk's token count is within the allowed range.
+   *
+   * @param {number} tokenCount - The number of tokens in the chunk to validate.
+   * @param {string} chunkText - The text of the chunk (used for error messages).
+   * @throws {Error} If the token count is zero, negative, or exceeds the configured chunk size.
    */
   private _validateTokenCount(tokenCount: number, chunkText: string): void {
     if (tokenCount <= 0) {
@@ -150,9 +211,19 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Generate groups of tokens from a list of tokens based on chunkSize and chunkOverlap.
-   * @param tokens The list of tokens to process.
-   * @returns A list of token groups (each group is a list of token IDs).
+   * Splits a list of token IDs into overlapping groups (chunks) according to the configured chunk size and overlap.
+   *
+   * Each group contains up to `chunkSize` tokens, and consecutive groups overlap by `chunkOverlap` tokens.
+   * The step size between groups is `chunkSize - chunkOverlap`.
+   * If the input token list is empty, returns an empty array.
+   *
+   * @param {number[]} tokens - The array of token IDs to be chunked.
+   * @returns {number[][]} An array of token groups, where each group is an array of token IDs.
+   *
+   * @example
+   * // With chunkSize=5, chunkOverlap=2:
+   * // tokens = [1,2,3,4,5,6,7,8,9]
+   * // returns: [[1,2,3,4,5], [4,5,6,7,8], [7,8,9]]
    */
   private _generateTokenGroups(tokens: number[]): number[][] {
     const tokenGroups: number[][] = [];
@@ -173,12 +244,16 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Create Chunk objects from chunk texts, token groups, and token counts.
-   * Calculates character offsets correctly for overlapping chunks.
-   * @param chunkTexts List of chunk texts.
-   * @param tokenGroups List of token groups corresponding to chunkTexts.
-   * @param tokenCounts List of token counts for each chunk.
-   * @returns A promise that resolves to a list of Chunk objects.
+   * Constructs Chunk objects from provided chunk texts, token groups, and token counts.
+   * 
+   * This method calculates accurate character offsets for each chunk, taking into account
+   * overlapping regions between chunks. It ensures that each Chunk object contains the correct
+   * text, start and end character indices, and token count.
+   * 
+   * @param {string[]} chunkTexts - The decoded text for each chunk.
+   * @param {number[][]} tokenGroups - The token ID arrays for each chunk, used for overlap and offset calculation.
+   * @param {number[]} tokenCounts - The number of tokens in each chunk.
+   * @returns {Promise<Chunk[]>} Promise resolving to an array of Chunk objects, each with text, character offsets, and token count.
    */
   private async _createChunks(
     chunkTexts: string[],
@@ -231,10 +306,14 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Split text into overlapping chunks of specified token size.
-   * @param text Input text to be chunked.
-   * @returns A promise that resolves to a list of Chunks or a list of strings,
-   *          depending on the `returnType`.
+   * Splits a single input text into overlapping chunks based on the configured token size and overlap.
+   *
+   * The text is tokenized, divided into groups of tokens with the specified overlap, and then decoded back to text.
+   * The output format depends on the `returnType` property: either an array of `Chunk` objects (with metadata)
+   * or an array of plain text strings.
+   *
+   * @param {string} text - The input text to be chunked.
+   * @returns {Promise<Chunk[] | string[]>} Promise resolving to an array of Chunks (with metadata) or an array of chunked text strings, depending on the `returnType`.
    */
   public async chunk(text: string): Promise<Chunk[] | string[]> {
     if (!text.trim()) {
@@ -261,11 +340,31 @@ export class TokenChunker extends BaseChunker {
   }
 
   /**
-   * Splits a batch of texts into chunks.
-   * This now calls the super class's chunkBatch to leverage its more complete implementation.
-   * @param texts An array of texts to chunk.
-   * @param showProgress Whether to show progress. Defaults to true as per BaseChunker.
-   * @returns A promise that resolves to an array, where each element is the result of chunking the corresponding input text.
+   * Splits a batch of texts into token-based chunks, returning either arrays of `Chunk` objects or arrays of chunked text strings for each input.
+   *
+   * This method leverages the implementation from the parent `BaseChunker` class, applying the current chunking configuration (tokenizer, chunk size, overlap, and return type).
+   *
+   * @param {string[]} texts - An array of input texts to be chunked.
+   * @param {boolean} [showProgress=true] - Whether to display progress during batch processing.
+   * @returns {Promise<Array<Chunk[] | string[]>>} A promise that resolves to an array, where each element is the result of chunking the corresponding input text (either an array of `Chunk` objects or an array of strings, depending on the `returnType`).
+   *
+   * @example
+   * const chunker = await TokenChunker.create({ chunkSize: 128, chunkOverlap: 16, returnType: "chunks" });
+   * const batchChunks = await chunker.chunkBatch([
+   *   "First document to chunk.",
+   *   "Second document, possibly longer."
+   * ]);
+   * // batchChunks[0] is an array of Chunks for the first document
+   * // batchChunks[1] is an array of Chunks for the second document
+   *
+   * // If returnType is "texts":
+   * const chunkerTexts = await TokenChunker.create({ chunkSize: 128, returnType: "texts" });
+   * const batchTextChunks = await chunkerTexts.chunkBatch([
+   *   "First document to chunk.",
+   *   "Second document, possibly longer."
+   * ]);
+   * // batchTextChunks[0] is an array of strings for the first document
+   * // batchTextChunks[1] is an array of strings for the second document
    */
   public async chunkBatch(texts: string[], showProgress: boolean = true): Promise<Array<Chunk[] | string[]>> {
     return super.chunkBatch(texts, showProgress);

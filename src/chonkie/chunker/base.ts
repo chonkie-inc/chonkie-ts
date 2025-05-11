@@ -3,6 +3,30 @@
 import { Tokenizer } from "../tokenizer";
 import { Chunk } from "../types/base";
 
+/**
+ * Base class for all chunking classes.
+ *
+ * This abstract class provides a common interface and shared logic for all chunking implementations.
+ * It supports chunking a single text or a batch of texts, with optional concurrency and progress reporting.
+ *
+ * Subclasses must implement the `chunk` method to define how a single text is chunked.
+ *
+ * @template T - The type of chunk produced (usually `Chunk[]` or `string[]`).
+ *
+ * @property {Tokenizer} tokenizer - The tokenizer instance used for chunking operations.
+ * @property {boolean} _useConcurrency - Whether to use concurrent processing for batch chunking (default: true).
+ *
+ * @example
+ * class MyChunker extends BaseChunker {
+ *   async chunk(text: string): Promise<Chunk[]> {
+ *     // ... implementation ...
+ *   }
+ * }
+ *
+ * const chunker = new MyChunker(tokenizer);
+ * const chunks = await chunker.call("Some text");
+ * const batchChunks = await chunker.call(["Text 1", "Text 2"], true);
+ */
 export abstract class BaseChunker {
   protected tokenizer: Tokenizer;
   protected _useConcurrency: boolean = true; // Determines if batch processing uses Promise.all
@@ -12,18 +36,24 @@ export abstract class BaseChunker {
   }
 
   /**
-   * Return a string representation of the chunker.
+   * Returns a string representation of the chunker instance.
+   *
+   * @returns {string} The class name and constructor signature.
    */
   public toString(): string {
     return `${this.constructor.name}()`;
   }
 
   /**
-   * Call the chunker with the given text or texts.
-   * @param text The text to chunk.
-   * @param showProgress Whether to show progress for batch operations.
-   * @returns A list of Chunks or strings if input is a single string.
-   *          A list of lists of Chunks or strings if input is a list of strings.
+   * Call the chunker with a single string or an array of strings.
+   *
+   * If a single string is provided, returns the result of `chunk(text)`.
+   * If an array of strings is provided, returns the result of `chunkBatch(texts, showProgress)`.
+   *
+   * @param {string | string[]} textOrTexts - The text or array of texts to chunk.
+   * @param {boolean} [showProgress=false] - Whether to display progress for batch operations (only applies to arrays).
+   * @returns {Promise<Chunk[] | string[] | (Chunk[] | string[])[]>} The chunked result(s).
+   * @throws {Error} If input is not a string or array of strings.
    */
   public async call(text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
   public async call(texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
@@ -43,10 +73,12 @@ export abstract class BaseChunker {
   }
 
   /**
-   * Process a batch of texts sequentially.
-   * @param texts The texts to chunk.
-   * @param showProgress Whether to show progress.
-   * @returns A list of lists of Chunks or strings.
+   * Process a batch of texts sequentially (one after another).
+   *
+   * @protected
+   * @param {string[]} texts - The texts to chunk.
+   * @param {boolean} [showProgress=false] - Whether to display progress in the console.
+   * @returns {Promise<(Chunk[] | string[])[]>} An array of chunked results for each input text.
    */
   protected async _sequential_batch_processing(
     texts: string[],
@@ -69,9 +101,11 @@ export abstract class BaseChunker {
 
   /**
    * Process a batch of texts concurrently using Promise.all.
-   * @param texts The texts to chunk.
-   * @param showProgress Whether to show progress.
-   * @returns A list of lists of Chunks or strings.
+   *
+   * @protected
+   * @param {string[]} texts - The texts to chunk.
+   * @param {boolean} [showProgress=false] - Whether to display progress in the console.
+   * @returns {Promise<(Chunk[] | string[])[]>} An array of chunked results for each input text.
    */
   protected async _concurrent_batch_processing(
     texts: string[],
@@ -104,16 +138,21 @@ export abstract class BaseChunker {
 
   /**
    * Abstract method to chunk a single text. Must be implemented by subclasses.
-   * @param text The text to chunk.
-   * @returns A list of Chunks or a list of strings.
+   *
+   * @param {string} text - The text to chunk.
+   * @returns {Promise<Chunk[] | string[]>} The chunked representation of the input text.
+   * @abstract
    */
   public abstract chunk(text: string): Promise<Chunk[] | string[]>;
 
   /**
-   * Chunk a batch of texts.
-   * @param texts The texts to chunk.
-   * @param showProgress Whether to show progress.
-   * @returns A list of lists of Chunks or a list of lists of strings.
+   * Chunk a batch of texts, using either concurrent or sequential processing.
+   *
+   * If only one text is provided, processes it directly without batch overhead.
+   *
+   * @param {string[]} texts - The texts to chunk.
+   * @param {boolean} [showProgress=true] - Whether to display progress in the console.
+   * @returns {Promise<(Chunk[] | string[])[]>} An array of chunked results for each input text.
    */
   public async chunkBatch(
     texts: string[],

@@ -9,7 +9,7 @@ async function main() {
    const simpleText = "Hello, World! This is a simple text. I am testing the token chunker and seeing if it works.";
 
     // Let's create a token chunker with the default tokenizer type
-    const tokenChunker = await TokenChunker.create({tokenizerOrName: 'Xenova/gpt2', chunkSize: 5, chunkOverlap: 2});
+    const tokenChunker = await TokenChunker.create({tokenizer: 'Xenova/gpt2', chunkSize: 5, chunkOverlap: 2});
     const chunks = await tokenChunker(simpleText);
     console.log("Chunks:", chunks);
 

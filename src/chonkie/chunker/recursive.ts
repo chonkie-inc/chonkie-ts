@@ -6,10 +6,18 @@ import { RecursiveChunk, RecursiveLevel, RecursiveRules } from "../types/recursi
 import { BaseChunker } from "./base";
 
 /**
- * Options for creating a RecursiveChunker instance.
+ * Configuration options for creating a RecursiveChunker instance.
+ * All options are optional and have sensible defaults.
+ * 
+ * @interface RecursiveChunkerOptions
+ * @property {string | Tokenizer} [tokenizer] - The tokenizer to use for text processing. Can be a string identifier (default: "Xenova/gpt2") or a Tokenizer instance.
+ * @property {number} [chunkSize] - The maximum number of tokens per chunk. Must be greater than 0. Default: 512.
+ * @property {RecursiveRules} [rules] - The rules that define how text should be recursively chunked. Default: new RecursiveRules().
+ * @property {number} [minCharactersPerChunk] - The minimum number of characters that should be in each chunk. Must be greater than 0. Default: 24.
+ * @property {"chunks" | "texts"} [returnType] - The type of output to return. "chunks" returns Chunk objects with metadata, "texts" returns plain strings. Default: "chunks".
  */
 export interface RecursiveChunkerOptions {
-  tokenizerOrName?: string | Tokenizer;
+  tokenizer?: string | Tokenizer;
   chunkSize?: number;
   rules?: RecursiveRules;
   minCharactersPerChunk?: number;
@@ -17,15 +25,72 @@ export interface RecursiveChunkerOptions {
 }
 
 /**
- * Represents a RecursiveChunker instance that is also directly callable.
- * Calling it executes its `call` method (from BaseChunker), which
- * in turn calls `chunk` or `chunkBatch`.
+ * Represents a RecursiveChunker instance that is also directly callable as a function.
+ *
+ * This type combines all properties and methods of {@link RecursiveChunker} with callable signatures for chunking text(s).
+ *
+ * Calling the instance executes its `call` method (from {@link BaseChunker}), which in turn calls `chunk` or `chunkBatch`.
+ *
+ * @typedef {Object} CallableRecursiveChunker
+ * @property {number} chunkSize - The maximum number of tokens per chunk.
+ * @property {number} minCharactersPerChunk - The minimum number of characters per chunk.
+ * @property {"chunks" | "texts"} returnType - The type of output to return ("chunks" for Chunk objects, "texts" for plain strings).
+ * @property {RecursiveRules} rules - The rules that define how text should be recursively chunked.
+ * @property {string} sep - The separator string used for internal splitting (usually "✄").
+ * @property {Tokenizer} tokenizer - The tokenizer instance used for chunking operations (inherited from BaseChunker).
+ *
+ * @method chunk - Recursively chunk a single text into chunks or strings.
+ * @method chunkBatch - Recursively chunk a batch of texts.
+ * @method toString - Returns a string representation of the RecursiveChunker instance.
+ * @method call - Call the chunker with a single string or an array of strings. (see callable signatures)
+ *
+ * @static
+ * @method create
+ * @memberof CallableRecursiveChunker
+ * @param {RecursiveChunkerOptions} [options] - Configuration options for the RecursiveChunker.
+ * @returns {Promise<CallableRecursiveChunker>} A Promise that resolves to a callable RecursiveChunker instance.
+ *
+ * @example
+ * const chunker = await RecursiveChunker.create({ chunkSize: 256 });
+ * const chunks = await chunker("Some text to chunk");
+ * const batchChunks = await chunker(["Text 1", "Text 2"]);
  */
 export type CallableRecursiveChunker = RecursiveChunker & {
   (text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
   (texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
 };
 
+
+/**
+ * Recursively chunk text using a set of rules.
+ * 
+ * This class extends the BaseChunker class and implements the chunk method.
+ * It provides a flexible way to chunk text based on custom rules, including
+ * delimiters, whitespace, and token-based chunking.
+ * 
+ * @extends BaseChunker
+ * @property {number} chunkSize - The maximum number of tokens per chunk.
+ * @property {number} minCharactersPerChunk - The minimum number of characters per chunk.
+ * @property {"chunks" | "texts"} returnType - The type of output to return ("chunks" for Chunk objects, "texts" for plain strings).
+ * @property {RecursiveRules} rules - The rules that define how text should be recursively chunked.
+ * @property {string} sep - The separator string used for internal splitting (usually "✄").
+ * 
+ * @method chunk - Recursively chunk a single text into chunks or strings.
+ * @method chunkBatch - Recursively chunk a batch of texts.
+ * @method toString - Returns a string representation of the RecursiveChunker instance.
+ * @method call - Call the chunker with a single string or an array of strings. (see callable signatures)
+ * 
+ * @static
+ * @method create
+ * @memberof RecursiveChunker
+ * @param {RecursiveChunkerOptions} [options] - Configuration options for the RecursiveChunker.
+ * @returns {Promise<RecursiveChunker>} A Promise that resolves to a RecursiveChunker instance.
+ * 
+ * @example
+ * const chunker = await RecursiveChunker.create({ chunkSize: 256 });
+ * const chunks = await chunker("Some text to chunk");
+ * const batchChunks = await chunker(["Text 1", "Text 2"]);
+ */
 export class RecursiveChunker extends BaseChunker {
   public readonly chunkSize: number;
   public readonly minCharactersPerChunk: number;
@@ -67,11 +132,49 @@ export class RecursiveChunker extends BaseChunker {
   }
 
   /**
-   * Creates and initializes a RecursiveChunker instance that is directly callable.
+   * Creates and initializes a directly callable RecursiveChunker instance.
+   *
+   * This static factory method constructs a RecursiveChunker with the provided options and returns a callable function object.
+   * The returned instance can be used as both a function (to chunk text(s)) and as an object (with all RecursiveChunker methods and properties).
+   *
+   * @param {RecursiveChunkerOptions} [options] - Configuration options for the chunker. All options are optional:
+   *   @param {string|Tokenizer} [options.tokenizer="Xenova/gpt2"] - Tokenizer to use for text processing. Can be a string identifier (e.g., "Xenova/gpt2") or a Tokenizer instance. If a string is provided, Tokenizer.create() is called internally.
+   *   @param {number} [options.chunkSize=512] - Maximum number of tokens per chunk. Must be > 0.
+   *   @param {RecursiveRules} [options.rules=new RecursiveRules()] - Rules for recursive chunking. See {@link RecursiveRules} for customization.
+   *   @param {number} [options.minCharactersPerChunk=24] - Minimum number of characters per chunk. Must be > 0.
+   *   @param {"chunks"|"texts"} [options.returnType="chunks"] - Output type: "chunks" for Chunk objects, "texts" for plain strings.
+   *
+   * @returns {Promise<CallableRecursiveChunker>} Promise resolving to a callable RecursiveChunker instance.
+   *
+   * @throws {Error} If any option is invalid (e.g., chunkSize <= 0, invalid returnType, etc).
+   *
+   * @see CallableRecursiveChunker for the callable interface and available properties/methods.
+   *
+   * @example <caption>Basic usage with default options</caption>
+   * const chunker = await RecursiveChunker.create();
+   * const chunks = await chunker("Some text to chunk");
+   *
+   * @example <caption>Custom options and batch chunking</caption>
+   * const chunker = await RecursiveChunker.create({ chunkSize: 256, returnType: "texts" });
+   * const batchChunks = await chunker(["Text 1", "Text 2"]);
+   *
+   * @example <caption>Accessing properties and methods</caption>
+   * const chunker = await RecursiveChunker.create();
+   * console.log(chunker.chunkSize); // 512
+   * console.log(chunker.rules); // RecursiveRules instance
+   * const chunks = await chunker.chunk("Some text"); // Use as object method
+   *
+   * @note
+   * The returned instance is both callable (like a function) and has all properties/methods of RecursiveChunker.
+   * You can use it as a drop-in replacement for a function or a class instance.
+   *
+   * @note
+   * For advanced customization, pass a custom RecursiveRules object to the rules option.
+   * See {@link RecursiveRules} and {@link RecursiveLevel} for rule structure.
    */
   public static async create(options: RecursiveChunkerOptions = {}): Promise<CallableRecursiveChunker> {
     const {
-      tokenizerOrName = "Xenova/gpt2",
+      tokenizer = "Xenova/gpt2",
       chunkSize = 512,
       rules = new RecursiveRules(),
       minCharactersPerChunk = 24,
@@ -79,10 +182,10 @@ export class RecursiveChunker extends BaseChunker {
     } = options;
 
     let tokenizerInstance: Tokenizer;
-    if (typeof tokenizerOrName === 'string') {
-      tokenizerInstance = await Tokenizer.create(tokenizerOrName);
+    if (typeof tokenizer === 'string') {
+      tokenizerInstance = await Tokenizer.create(tokenizer);
     } else {
-      tokenizerInstance = tokenizerOrName;
+      tokenizerInstance = tokenizer;
     }
 
     const plainInstance = new RecursiveChunker(
@@ -116,7 +219,14 @@ export class RecursiveChunker extends BaseChunker {
   }
 
   /**
-   * Estimate token count for a text.
+   * Estimates the number of tokens in a given text.
+   * 
+   * This method uses a character-to-token ratio (default: 6.5 characters per token) for quick estimation.
+   * If the estimated token count exceeds the chunk size, it performs an actual token count.
+   * 
+   * @param {string} text - The text to estimate token count for
+   * @returns {Promise<number>} A promise that resolves to the estimated number of tokens
+   * @private
    */
   private async _estimateTokenCount(text: string): Promise<number> {
     const estimate = Math.max(1, Math.floor(text.length / this._CHARS_PER_TOKEN));
@@ -124,7 +234,17 @@ export class RecursiveChunker extends BaseChunker {
   }
 
   /**
-   * Split the text into chunks using the delimiters.
+   * Split the text into chunks based on the provided recursive level rules.
+   * 
+   * This method handles three different splitting strategies:
+   * 1. Whitespace-based splitting: Splits text on spaces
+   * 2. Delimiter-based splitting: Splits text on specified delimiters with options to include delimiters
+   * 3. Token-based splitting: Splits text into chunks of maximum token size
+   * 
+   * @param {string} text - The text to be split into chunks
+   * @param {RecursiveLevel} recursiveLevel - The rules defining how to split the text
+   * @returns {Promise<string[]>} A promise that resolves to an array of text chunks
+   * @private
    */
   private async _splitText(text: string, recursiveLevel: RecursiveLevel): Promise<string[]> {
     // At every delimiter, replace it with the sep
@@ -186,6 +306,12 @@ export class RecursiveChunker extends BaseChunker {
 
   /**
    * Create a RecursiveChunk object with indices based on the current offset.
+   * 
+   * This method constructs a RecursiveChunk object that contains metadata about the chunk,
+   * including the text content, its start and end indices, token count, and the level of recursion.
+   * 
+   * @param {string} text - The text content of the chunk
+   * @param {number} tokenCount - The number of tokens in the chunk
    */
   private _makeChunks(text: string, tokenCount: number, level: number, startOffset: number): RecursiveChunk {
     return new RecursiveChunk({
@@ -279,6 +405,12 @@ export class RecursiveChunker extends BaseChunker {
 
   /**
    * Binary search to find the leftmost position where value should be inserted to maintain order.
+   * 
+   * @param {number[]} arr - The array to search
+   * @param {number} value - The value to insert
+   * @param {number} [lo=0] - The starting index for the search
+   * @returns {number} The index where the value should be inserted
+   * @private
    */
   private _bisectLeft(arr: number[], value: number, lo: number = 0): number {
     let hi = arr.length;
@@ -383,6 +515,12 @@ export class RecursiveChunker extends BaseChunker {
 
   /**
    * Recursively chunk text.
+   * 
+   * This method is the main entry point for chunking text using the RecursiveChunker.
+   * It takes a single text string and returns an array of chunks or strings depending on the returnType.
+   * 
+   * @param {string} text - The text to be chunked
+   * @returns {Promise<Chunk[] | string[]>} A promise that resolves to an array of Chunk objects or strings
    */
   public async chunk(text: string): Promise<Chunk[] | string[]> {
     const result = await this._recursiveChunk(text, 0, 0);
@@ -394,6 +532,11 @@ export class RecursiveChunker extends BaseChunker {
 
   /**
    * Return a string representation of the RecursiveChunker.
+   * 
+   * This method provides a string representation of the RecursiveChunker instance,
+   * including its tokenizer, rules, chunk size, minimum characters per chunk, and return type.
+   * 
+   * @returns {string} A string representation of the RecursiveChunker
    */
   public toString(): string {
     return `RecursiveChunker(tokenizer=${this.tokenizer}, ` +
