@@ -1,4 +1,5 @@
-import { LateChunker } from "../src/chonkie/cloud/late";
+import { LateChunker } from "chonkie/cloud";
+import { LateChunk } from "chonkie/types";
 
 const CHONKIE_API_KEY = "<YOUR_API_KEY>";
 async function main() {
@@ -39,7 +40,7 @@ async function main() {
         const customChunker = new LateChunker(CHONKIE_API_KEY, {
             embeddingModel: "all-MiniLM-L6-v2",
             chunkSize: 256,                    // Smaller chunks
-            recipe: "default",                
+            recipe: "default",
             lang: "en",
             minCharactersPerChunk: 50          // Higher minimum characters
         });
