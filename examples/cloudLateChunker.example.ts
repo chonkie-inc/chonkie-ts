@@ -12,14 +12,14 @@ async function main() {
 
     // Example text to chunk
     const text = `Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm for enhancing large language models with external knowledge. 
-  The effectiveness of RAG systems heavily depends on the thoughtful implementation of appropriate chunking strategies. 
-  While the field continues to evolve, practitioners must carefully consider their specific use cases and requirements when designing chunking solutions. 
-  Factors such as document characteristics, retrieval patterns, and performance requirements should guide the selection and optimization of chunking strategies.`;
+                The effectiveness of RAG systems heavily depends on the thoughtful implementation of appropriate chunking strategies. 
+                While the field continues to evolve, practitioners must carefully consider their specific use cases and requirements when designing chunking solutions. 
+                Factors such as document characteristics, retrieval patterns, and performance requirements should guide the selection and optimization of chunking strategies.`;
 
     try {
         // Chunk a single text
         console.log("Chunking single text...");
-        const chunks = await chunker.chunk({text: text});
+        const chunks = await chunker.chunk({ text: text });
         console.log("Chunks:", chunks);
         console.log("\nNumber of chunks:", chunks.length);
 
@@ -30,7 +30,7 @@ async function main() {
         ];
 
         console.log("\nChunking multiple texts...");
-        const batchChunks = await chunker.chunkBatch([{text: texts[0]}, {text: texts[1]}]);
+        const batchChunks = await chunker.chunkBatch([{ text: texts[0] }, { text: texts[1] }]);
         console.log("Batch chunks:", batchChunks);
         console.log("\nNumber of documents processed:", batchChunks.length);
 
@@ -44,7 +44,7 @@ async function main() {
         });
 
         console.log("\nChunking with custom configuration...");
-        const customChunks = await customChunker.chunk({text: text});
+        const customChunks = await customChunker.chunk({ text: text });
         console.log("Custom chunks:", customChunks);
         console.log("\nNumber of custom chunks:", customChunks.length);
 
