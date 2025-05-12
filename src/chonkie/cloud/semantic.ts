@@ -1,7 +1,7 @@
 /** Semantic chunker client for Chonkie API. */
 
 import { CloudClient, ChunkerInput } from "./base";
-import { Chunk } from "../types/base";
+import { SemanticChunk } from "../types/semantic";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -39,7 +39,7 @@ export class SemanticChunker extends CloudClient {
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<SemanticChunk[] | string[]> {
     const formData = new FormData();
     
     if (input.filepath) {
@@ -67,11 +67,11 @@ export class SemanticChunker extends CloudClient {
     });
 
     return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
+      ? data.map((chunk: any) => SemanticChunk.fromDict(chunk))
       : data;
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<(SemanticChunk[] | string[])[]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

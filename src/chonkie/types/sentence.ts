@@ -11,7 +11,7 @@ import { Chunk } from './base';
  * @property endIndex - The zero-based index indicating where the sentence ends in the original text (inclusive).
  * @property tokenCount - The number of tokens (words or subwords) in the sentence, useful for NLP tasks.
  */
-interface SentenceData {
+export interface SentenceData {
   text: string;
   startIndex: number;
   endIndex: number;

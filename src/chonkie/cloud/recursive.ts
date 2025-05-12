@@ -1,7 +1,7 @@
 /** Recursive chunker client for Chonkie API. */
 
 import { CloudClient, ChunkerInput } from "./base";
-import { Chunk } from "../types/base";
+import { RecursiveChunk } from "../types/recursive";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -31,7 +31,7 @@ export class RecursiveChunker extends CloudClient {
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<RecursiveChunk[] | string[]> {
     const formData = new FormData();
     
     if (input.filepath) {
@@ -56,11 +56,11 @@ export class RecursiveChunker extends CloudClient {
     });
 
     return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
+      ? data.map((chunk: any) => RecursiveChunk.fromDict(chunk))
       : data;
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<(RecursiveChunk[] | string[])[]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

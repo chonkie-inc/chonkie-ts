@@ -1,8 +1,5 @@
 /** Base cloud client for Chonkie API. */
 
-import { Chunk } from "../types/base";
-import * as path from 'path';
-
 export interface CloudClientConfig {
   apiKey: string;
   baseUrl?: string;
@@ -10,7 +7,7 @@ export interface CloudClientConfig {
 
 export interface ChunkerInput {
   text?: string;
-  filepath?: string; 
+  filepath?: string;
 }
 
 export class CloudClient {

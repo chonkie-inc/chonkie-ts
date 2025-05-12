@@ -1,7 +1,7 @@
 /** Late chunker client for Chonkie API. */
 
 import { CloudClient, ChunkerInput } from "./base";
-import { Chunk } from "../types/base";
+import { LateChunk } from "../types/late";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -27,7 +27,7 @@ export class LateChunker extends CloudClient {
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<LateChunk[] | string[]> {
     const formData = new FormData();
     
     if (input.filepath) {
@@ -55,10 +55,10 @@ export class LateChunker extends CloudClient {
 
     console.log(data);
 
-    return data.map((chunk: any) => Chunk.fromDict(chunk));
+    return data.map((chunk: any) => LateChunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<(LateChunk[] | string[])[]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 
