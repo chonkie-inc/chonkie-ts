@@ -1,8 +1,9 @@
 import { LateChunker } from "../src/chonkie/cloud/late";
 
+const CHONKIE_API_KEY = "<YOUR_API_KEY>";
 async function main() {
     // Initialize the late chunker with your API key
-    const chunker = new LateChunker("YOUR_API_KEY", {
+    const chunker = new LateChunker(CHONKIE_API_KEY, {
         embeddingModel: "all-MiniLM-L6-v2",  // Default embedding model
         chunkSize: 512,                      // Default chunk size
         recipe: "default",                   // Default recipe
@@ -35,10 +36,10 @@ async function main() {
         console.log("\nNumber of documents processed:", batchChunks.length);
 
         // Example with custom configuration
-        const customChunker = new LateChunker("YOUR API KEY", {
+        const customChunker = new LateChunker(CHONKIE_API_KEY, {
             embeddingModel: "all-MiniLM-L6-v2",
             chunkSize: 256,                    // Smaller chunks
-            recipe: "semantic",                // Semantic chunking recipe
+            recipe: "default",                
             lang: "en",
             minCharactersPerChunk: 50          // Higher minimum characters
         });
@@ -48,6 +49,19 @@ async function main() {
         console.log("Custom chunks:", customChunks);
         console.log("\nNumber of custom chunks:", customChunks.length);
 
+        // Chunk the main README.md file
+        const markdownChunker = new LateChunker(CHONKIE_API_KEY, {
+            embeddingModel: "all-MiniLM-L6-v2",
+            chunkSize: 512,
+            recipe: "markdown",
+            lang: "en",
+            minCharactersPerChunk: 24
+        });
+        console.log("\nChunking README.md...");
+        const readme = "README.md";  // run this from the root of the project
+        const readmeChunks = await markdownChunker.chunk({ filepath: readme });
+        console.log("README.md chunks:", readmeChunks);
+        console.log("\nNumber of README.md chunks:", readmeChunks.length);
     } catch (error) {
         console.error("Error during chunking:", error);
     }

@@ -53,6 +53,8 @@ export class LateChunker extends CloudClient {
       body: formData,
     });
 
+    console.log(data);
+
     return data.map((chunk: any) => Chunk.fromDict(chunk));
   }
 
