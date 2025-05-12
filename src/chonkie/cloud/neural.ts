@@ -1,6 +1,6 @@
 /** Neural chunker client for Chonkie API. */
 
-import { CloudClient } from "./base";
+import { CloudClient, ChunkerInput } from "./base";
 import { Chunk } from "../types/base";
 
 export interface NeuralChunkerConfig {
@@ -21,9 +21,19 @@ export class NeuralChunker extends CloudClient {
     };
   }
 
-  async chunk(text: string): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
     const formData = new FormData();
-    formData.append("file", new Blob([text], { type: "text/plain" }));
+    
+    if (input.filepath) {
+      formData.append("file", input.filepath);
+    } else if (input.text) {
+      formData.append("text", input.text);
+      // Append empty file to ensure multipart form
+      formData.append("file", new Blob(), "text_input.txt");
+    } else {
+      throw new Error("Either text or file must be provided");
+    }
+
     formData.append("embedding_model", this.config.model);
     formData.append("chunk_size", this.config.minCharactersPerChunk.toString());
     formData.append("similarity_threshold", "0.7");
@@ -33,9 +43,6 @@ export class NeuralChunker extends CloudClient {
 
     const data = await this.request<any>("/v1/chunk/neural", {
       method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
       body: formData,
     });
 
@@ -44,7 +51,7 @@ export class NeuralChunker extends CloudClient {
       : data;
   }
 
-  async chunkBatch(texts: string[]): Promise<(Chunk[] | string[])[]> {
-    return Promise.all(texts.map(text => this.chunk(text)));
+  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+    return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

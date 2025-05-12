@@ -1,7 +1,9 @@
 /** SDPM chunker client for Chonkie API. */
 
-import { CloudClient } from "./base";
+import { CloudClient, ChunkerInput } from "./base";
 import { Chunk } from "../types/base";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface SDPMChunkerConfig {
   embeddingModel?: string;
@@ -37,9 +39,21 @@ export class SDPMChunker extends CloudClient {
     };
   }
 
-  async chunk(text: string): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
     const formData = new FormData();
-    formData.append("file", new Blob([text], { type: "text/plain" }));
+    
+    if (input.filepath) {
+      const fileContent = fs.readFileSync(input.filepath);
+      const fileName = path.basename(input.filepath) || 'file.txt';
+      formData.append("file", new Blob([fileContent]), fileName);
+    } else if (input.text) {
+      formData.append("text", input.text);
+      // Append empty file to ensure multipart form
+      formData.append("file", new Blob(), "text_input.txt");
+    } else {
+      throw new Error("Either text or filepath must be provided");
+    }
+
     formData.append("embedding_model", this.config.embeddingModel);
     if (typeof this.config.threshold === "number") {
       formData.append("threshold", this.config.threshold.toString());
@@ -64,9 +78,6 @@ export class SDPMChunker extends CloudClient {
 
     const data = await this.request<any>("/v1/chunk/sdpm", {
       method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
       body: formData,
     });
 
@@ -75,7 +86,7 @@ export class SDPMChunker extends CloudClient {
       : data;
   }
 
-  async chunkBatch(texts: string[]): Promise<(Chunk[] | string[])[]> {
-    return Promise.all(texts.map(text => this.chunk(text)));
+  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+    return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 
