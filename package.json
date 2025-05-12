@@ -21,6 +21,10 @@
     "./cloud": {
       "types": "./dist/chonkie/cloud/index.d.ts",
       "default": "./dist/chonkie/cloud/index.js"
+    },
+    "./types": {
+      "types": "./dist/chonkie/types/index.d.ts",
+      "default": "./dist/chonkie/types/index.js"
     }
   },
   "scripts": {
