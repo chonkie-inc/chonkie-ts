@@ -6,7 +6,7 @@
   "homepage": "https://docs.chonkie.ai",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chonkie-inc/chonkie-ts.git"
+    "url": "git+https://github.com/chonkie-inc/chonkie-ts.git"
   },
   "bugs": {
     "url": "https://github.com/chonkie-inc/chonkie-ts/issues"
