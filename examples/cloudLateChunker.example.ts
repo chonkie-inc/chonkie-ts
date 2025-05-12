@@ -23,7 +23,7 @@ async function main() {
         console.log("Chunking single text...");
         const chunks = await chunker.chunk({ text: text });
         console.log("Chunks:", chunks);
-        console.log("embeddings: ", chunks.map((chunk: LateChunk) => chunk.embedding));
+        console.log("embeddings: ", (chunks as LateChunk[]).map(chunk => chunk.embedding));
         console.log("\nNumber of chunks:", chunks.length);
 
         // Example of chunking multiple texts
