@@ -22,7 +22,6 @@ export class LateChunk extends RecursiveChunk {
     embedding?: number[];
   }) {
     super(data);
-    this.embedding = data.embedding;
   }
 
   /** Return a string representation of the LateChunk */

@@ -14,7 +14,6 @@ export interface SentenceChunkerConfig {
   approximate?: boolean;
   delim?: string | string[];
   includeDelim?: "prev" | "next" | null;
-  returnType?: "texts" | "chunks";
 }
 
 export class SentenceChunker extends CloudClient {
@@ -31,13 +30,12 @@ export class SentenceChunker extends CloudClient {
       approximate: config.approximate ?? false,
       delim: config.delim || [".", "!", "?", "\n"],
       includeDelim: config.includeDelim ?? "prev",
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<SentenceChunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<SentenceChunk[]> {
     const formData = new FormData();
-    
+
     if (input.filepath) {
       const fileContent = fs.readFileSync(input.filepath);
       const fileName = path.basename(input.filepath) || 'file.txt';
@@ -59,19 +57,17 @@ export class SentenceChunker extends CloudClient {
     formData.append("approximate", this.config.approximate.toString());
     formData.append("delim", JSON.stringify(this.config.delim));
     formData.append("include_delim", this.config.includeDelim || "prev");
-    formData.append("return_type", this.config.returnType);
+    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/sentence", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => SentenceChunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => SentenceChunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(SentenceChunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<SentenceChunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
-} 
+}   

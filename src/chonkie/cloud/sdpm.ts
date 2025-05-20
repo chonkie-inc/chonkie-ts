@@ -16,7 +16,6 @@ export interface SDPMChunkerConfig {
   thresholdStep?: number;
   delim?: string | string[];
   includeDelim?: "prev" | "next" | null;
-  returnType?: "texts" | "chunks";
 }
 
 export class SDPMChunker extends CloudClient {
@@ -35,13 +34,12 @@ export class SDPMChunker extends CloudClient {
       thresholdStep: config.thresholdStep || 0.01,
       delim: config.delim || [".", "!", "?", "\n"],
       includeDelim: config.includeDelim ?? "prev",
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<SemanticChunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<SemanticChunk[]> {
     const formData = new FormData();
-    
+
     if (input.filepath) {
       const fileContent = fs.readFileSync(input.filepath);
       const fileName = path.basename(input.filepath) || 'file.txt';
@@ -70,19 +68,17 @@ export class SDPMChunker extends CloudClient {
     // Append delim as a string array
     formData.append("delim", JSON.stringify(this.config.delim));
     formData.append("include_delim", this.config.includeDelim || "prev");
-    formData.append("return_type", this.config.returnType);
+    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/sdpm", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => SemanticChunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => SemanticChunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(SemanticChunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<SemanticChunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

@@ -14,6 +14,7 @@ export interface CodeChunkData {
   tokenCount: number;
   lang?: string;
   nodes?: TreeSitterNode[];
+  embedding?: number[];
 }
 
 /**
@@ -33,6 +34,7 @@ export class CodeChunk extends Chunk {
     tokenCount: number;
     lang?: string;
     nodes?: TreeSitterNode[];
+    embedding?: number[];
   }) {
     super(data);
     this.lang = data.lang;

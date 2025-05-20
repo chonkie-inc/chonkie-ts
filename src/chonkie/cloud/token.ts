@@ -9,7 +9,6 @@ export interface TokenChunkerConfig {
   tokenizer?: string;
   chunkSize?: number;
   chunkOverlap?: number;
-  returnType?: "texts" | "chunks";
 }
 
 export class TokenChunker extends CloudClient {
@@ -21,13 +20,12 @@ export class TokenChunker extends CloudClient {
       tokenizer: config.tokenizer || "gpt2",
       chunkSize: config.chunkSize || 512,
       chunkOverlap: config.chunkOverlap || 0,
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<Chunk[]> {
     const formData = new FormData();
-    
+
     if (input.filepath) {
       const fileContent = fs.readFileSync(input.filepath);
       const fileName = path.basename(input.filepath) || 'file.txt';
@@ -43,19 +41,17 @@ export class TokenChunker extends CloudClient {
     formData.append("tokenizer_or_token_counter", this.config.tokenizer);
     formData.append("chunk_size", this.config.chunkSize.toString());
     formData.append("chunk_overlap", this.config.chunkOverlap.toString());
-    formData.append("return_type", this.config.returnType);
+    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/token", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => Chunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<Chunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

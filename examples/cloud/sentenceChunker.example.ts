@@ -1,0 +1,41 @@
+import { SentenceChunker } from "chonkie/cloud";
+
+const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
+
+async function main() {
+    // Initialize the sentence chunker with your API key
+    const chunker = new SentenceChunker(CHONKIE_API_KEY, {
+        language: "en",            // Language of the text
+        maxSentences: 3,           // Maximum sentences per chunk
+        maxChars: 500,             // Maximum characters per chunk
+        preserveParagraphs: true   // Whether to respect paragraph boundaries
+    });
+
+    // Example text with multiple sentences and paragraphs
+    const text = `The quick brown fox jumps over the lazy dog. This sentence contains all the letters in the English alphabet. It's often used for typing practice.
+
+Artificial intelligence is revolutionizing many industries. From healthcare to finance, AI applications are becoming increasingly sophisticated. Machine learning, a subset of AI, enables systems to learn from data.
+
+Natural language processing allows computers to understand human language. This technology powers virtual assistants and translation services. The field continues to advance rapidly.`;
+
+    try {
+        // Chunk the text by sentences
+        console.log("Chunking text with sentence chunker...");
+        const chunks = await chunker.chunk({ text });
+        
+        console.log("Sentence chunks:");
+        chunks.forEach((chunk, index) => {
+            console.log(`\nChunk ${index + 1}:`);
+            console.log(chunk.text);
+            const sentenceCount = (chunk.text.match(/[.!?]+/g) || []).length;
+            console.log(`--- (${sentenceCount} sentences, ${chunk.text.length} characters)`);
+        });
+        
+        console.log("\nTotal chunks:", chunks.length);
+    } catch (error) {
+        console.error("Error during sentence chunking:", error);
+    }
+}
+
+// Run the demo
+main().catch(console.error);

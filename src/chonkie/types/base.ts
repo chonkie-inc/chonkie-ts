@@ -133,6 +133,7 @@ interface ChunkData {
   endIndex: number;
   tokenCount: number;
   context?: ContextData;
+  embedding?: number[];
 }
 
 /**
@@ -143,6 +144,7 @@ interface ChunkData {
  * @property {number} endIndex - The ending index of the chunk in the original text.
  * @property {number} tokenCount - The number of tokens in the chunk.
  * @property {Context} [context] - The context metadata for the chunk.
+ * @property {number[]} [embedding] - The embedding for the chunk.
  */
 export class Chunk {
   /** The text of the chunk. */
@@ -155,6 +157,8 @@ export class Chunk {
   public tokenCount: number;
   /** Optional context metadata for the chunk. */
   public context?: Context;
+  /** Optional embedding for the chunk. */
+  public embedding?: number[];
 
   /**
    * Constructs a new Chunk object.
@@ -167,12 +171,14 @@ export class Chunk {
     endIndex: number;
     tokenCount: number;
     context?: Context;
+    embedding?: number[];
   }) {
     this.text = data.text;
     this.startIndex = data.startIndex;
     this.endIndex = data.endIndex;
     this.tokenCount = data.tokenCount;
     this.context = data.context;
+    this.embedding = data.embedding;
 
     // Basic validation, more can be added if needed
     if (this.startIndex > this.endIndex) {
@@ -181,14 +187,6 @@ export class Chunk {
     if (this.tokenCount < 0) {
         throw new Error("Token count must be a non-negative integer.");
     }
-  }
-
-  /** Return the length of the text. 
-   * 
-   * @returns {number} The length of the text.
-   */
-  public get length(): number {
-    return this.text.length;
   }
 
   /** Return a string representation of the Chunk. 
@@ -213,16 +211,6 @@ export class Chunk {
     return repr;
   }
 
-  /** Return an iterator over the chunk's text. 
-   * 
-   * @returns {IterableIterator<string>} The iterator over the chunk's text.
-   */
-  public *[Symbol.iterator](): IterableIterator<string> {
-    for (let i = 0; i < this.text.length; i++) {
-      yield this.text[i];
-    }
-  }
-
   /** Return a slice of the chunk's text. 
    * 
    * @param {number} [start] - The starting index of the slice.
@@ -244,6 +232,7 @@ export class Chunk {
       endIndex: this.endIndex,
       tokenCount: this.tokenCount,
       context: this.context ? this.context.toDict() : undefined,
+      embedding: this.embedding,
     };
   }
 
@@ -259,6 +248,7 @@ export class Chunk {
       endIndex: data.endIndex,
       tokenCount: data.tokenCount,
       context: data.context ? Context.fromDict(data.context) : undefined,
+      embedding: data.embedding,
     });
   }
 

@@ -46,6 +46,7 @@ export interface SemanticChunkData {
   endIndex: number;
   tokenCount: number;
   sentences: SemanticSentenceData[];
+  embedding?: number[];
 }
 
 export class SemanticChunk extends SentenceChunk {
@@ -59,6 +60,7 @@ export class SemanticChunk extends SentenceChunk {
       endIndex: data.endIndex,
       tokenCount: data.tokenCount,
       sentences: data.sentences,
+      embedding: data.embedding,
     });
     this.sentences = data.sentences;
   }

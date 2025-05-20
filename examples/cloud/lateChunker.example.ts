@@ -1,7 +1,7 @@
 import { LateChunker } from "chonkie/cloud";
 import { LateChunk } from "chonkie/types";
 
-const CHONKIE_API_KEY = "<YOUR_API_KEY>";
+const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
 async function main() {
     // Initialize the late chunker with your API key
     const chunker = new LateChunker(CHONKIE_API_KEY, {

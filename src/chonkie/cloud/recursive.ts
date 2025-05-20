@@ -11,7 +11,6 @@ export interface RecursiveChunkerConfig {
   recipe?: string;
   lang?: string;
   minCharactersPerChunk?: number;
-  returnType?: "texts" | "chunks";
 }
 
 export class RecursiveChunker extends CloudClient {
@@ -25,11 +24,10 @@ export class RecursiveChunker extends CloudClient {
       recipe: config.recipe || "default",
       lang: config.lang || "en",
       minCharactersPerChunk: config.minCharactersPerChunk || 12,
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<RecursiveChunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<RecursiveChunk[]> {
     const formData = new FormData();
     
     if (input.filepath) {
@@ -49,19 +47,17 @@ export class RecursiveChunker extends CloudClient {
     formData.append("recipe", this.config.recipe);
     formData.append("lang", this.config.lang);
     formData.append("min_characters_per_chunk", this.config.minCharactersPerChunk.toString());
-    formData.append("return_type", this.config.returnType);
+    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/recursive", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => RecursiveChunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => RecursiveChunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(RecursiveChunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<RecursiveChunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

@@ -1,8 +1,5 @@
 import { Chunk } from './base';
 
-
-// TODO: Figure out a way for the SentenceChunk to be able to visualize the sentence in the chunk when a console.log is called — for some reason it just shows up as [Sentence] right now. 
-
 /**
  * Represents the essential data for a sentence within a text.
  *
@@ -29,6 +26,7 @@ export interface SentenceData {
  * @property {number} startIndex - The starting index of the sentence in the original text.
  * @property {number} endIndex - The ending index of the sentence in the original text.
  * @property {number} tokenCount - The number of tokens in the sentence.
+ * @property {number[]} [embedding] - The embedding vector for the sentence (array of numbers, or null if not present).
  *
  * @method toString Returns a string representation of the Sentence.
  * @returns {string}
@@ -113,6 +111,7 @@ interface SentenceChunkData {
   endIndex: number;
   tokenCount: number;
   sentences: SentenceData[];
+  embedding?: number[];
 }
 
 /**
@@ -150,9 +149,11 @@ export class SentenceChunk extends Chunk {
     endIndex: number;
     tokenCount: number;
     sentences: Sentence[];
+    embedding?: number[];
   }) {
     super(data);
     this.sentences = data.sentences;
+    this.embedding = data.embedding ?? undefined;
   }
 
   /**
@@ -199,6 +200,7 @@ export class SentenceChunk extends Chunk {
       endIndex: data.endIndex,
       tokenCount: data.tokenCount,
       sentences,
+      embedding: data.embedding ?? undefined,
     });
   }
 } 

@@ -10,7 +10,6 @@ export interface SlumberChunkerConfig {
   chunkSize?: number;
   candidateSize?: number;
   minCharactersPerChunk?: number;
-  returnType?: "texts" | "chunks";
 }
 
 export class SlumberChunker extends CloudClient {
@@ -23,13 +22,12 @@ export class SlumberChunker extends CloudClient {
       chunkSize: config.chunkSize || 1024,
       candidateSize: config.candidateSize || 32,
       minCharactersPerChunk: config.minCharactersPerChunk || 12,
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<Chunk[]> {
     const formData = new FormData();
-    
+
     if (input.filepath) {
       const fileContent = fs.readFileSync(input.filepath);
       const fileName = path.basename(input.filepath) || 'file.txt';
@@ -46,19 +44,17 @@ export class SlumberChunker extends CloudClient {
     formData.append("chunk_size", this.config.chunkSize.toString());
     formData.append("candidate_size", this.config.candidateSize.toString());
     formData.append("min_characters_per_chunk", this.config.minCharactersPerChunk.toString());
-    formData.append("return_type", this.config.returnType);
+    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/slumber", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => Chunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<Chunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 
