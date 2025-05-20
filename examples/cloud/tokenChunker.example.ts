@@ -4,11 +4,7 @@ const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
 
 async function main() {
     // Initialize the token chunker with your API key
-    const chunker = new TokenChunker(CHONKIE_API_KEY, {
-        chunkSize: 50,           // Target chunk size in tokens
-        overlap: 5,              // Token overlap between chunks
-        model: "gpt-3.5-turbo"   // Tokenizer model to use
-    });
+    const chunker = new TokenChunker(CHONKIE_API_KEY, {});
 
     // Example text to chunk
     const text = `Tokenization is the process of converting a sequence of characters into a sequence of tokens. 
@@ -19,14 +15,13 @@ async function main() {
         // Chunk the text by tokens
         console.log("Chunking text with token chunker...");
         const chunks = await chunker.chunk({ text });
-        
+
         console.log("Token chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
             console.log(chunk.text);
-            console.log(`--- (${chunk.tokens} tokens)`);
         });
-        
+
         console.log("\nTotal chunks:", chunks.length);
     } catch (error) {
         console.error("Error during token chunking:", error);

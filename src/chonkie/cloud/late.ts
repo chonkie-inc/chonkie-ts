@@ -54,7 +54,19 @@ export class LateChunker extends CloudClient {
       body: formData,
     });
 
-    return data.map((chunk: any) => LateChunk.fromDict(chunk));
+    // Convert from snake_case to camelCase
+    const camelCaseData = data.map((chunk: any) => {
+      return {
+        text: chunk.text,
+        startIndex: chunk.start_index,
+        endIndex: chunk.end_index,
+        tokenCount: chunk.token_count,
+        embedding: chunk.embedding || undefined,
+        sentences: chunk.sentences,
+      };
+    });
+
+    return camelCaseData.map((chunk: any) => LateChunk.fromDict(chunk));
   }
 
   async chunkBatch(inputs: ChunkerInput[]): Promise<(LateChunk[] | string[])[]> {

@@ -1,14 +1,11 @@
-import { SdpmChunker } from "chonkie/cloud";
+import { SDPMChunker } from "chonkie/cloud";
 
 const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
 
 async function main() {
     // Initialize the SDPM chunker with your API key
-    const chunker = new SdpmChunker(CHONKIE_API_KEY, {
-        model: "sdpm-v1",           // SDPM model version
+    const chunker = new SDPMChunker(CHONKIE_API_KEY, {
         chunkSize: 512,             // Target chunk size in tokens
-        strategy: "semantic",       // Chunking strategy
-        preserveStructure: true     // Whether to preserve document structure
     });
 
     // Example document text

@@ -1,14 +1,12 @@
 import { NeuralChunker } from "chonkie/cloud";
 
-const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
+const CHONKIE_API_KEY = "e895eea7-390d-42d2-9f32-d368db22df57";
 
 async function main() {
     // Initialize the neural chunker with your API key
     const chunker = new NeuralChunker(CHONKIE_API_KEY, {
-        model: "gpt-4",           // Model to use for neural chunking
-        chunkSize: 1024,          // Target chunk size in tokens
-        overlap: 128,             // Token overlap between chunks
-        strategy: "semantic"      // Chunking strategy
+        model: "mirth/chonky_modernbert_large_1",
+        minCharactersPerChunk: 10,
     });
 
     // Example text to chunk
@@ -20,14 +18,14 @@ async function main() {
         // Chunk the text
         console.log("Chunking text with neural chunker...");
         const chunks = await chunker.chunk({ text });
-        
+
         console.log("Neural chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
             console.log(chunk.text);
             console.log(`--- (${chunk.text.length} characters)`);
         });
-        
+
         console.log("\nTotal chunks:", chunks.length);
     } catch (error) {
         console.error("Error during neural chunking:", error);

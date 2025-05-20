@@ -1,6 +1,6 @@
 import { CodeChunker } from "chonkie/cloud";
 
-const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
+const CHONKIE_API_KEY = "<YOUR API KEY HERE";
 
 async function main() {
     // Initialize the code chunker with your API key
@@ -8,7 +8,6 @@ async function main() {
         language: "typescript",  // Programming language of the code
         chunkSize: 100,         // Target number of lines per chunk
         includeNodes: false,
-        returnType: "chunks"
     });
 
     // Example TypeScript code to chunk

@@ -11,3 +11,4 @@ export * from './semantic';
 export * from './sentence';
 export * from './slumber';
 export * from './token'; 
+export * from './overlap_refinery';

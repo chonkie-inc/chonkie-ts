@@ -1,40 +1,70 @@
 import { RecursiveChunker } from "chonkie/cloud";
+import { RecursiveChunk } from "chonkie/types";
 
 const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
-
 async function main() {
-    // Initialize the recursive chunker with your API key
+    // Initialize the late chunker with your API key
     const chunker = new RecursiveChunker(CHONKIE_API_KEY, {
-        chunkSize: 300,           // Target chunk size in characters
-        minChunkSize: 100,        // Minimum chunk size
-        maxChunkSize: 500,        // Maximum chunk size
-        separators: ["\n\n", ". ", "? ", "! ", " ", ""]  // Separators to try in order
+        chunkSize: 512,                      // Default chunk size
+        recipe: "default",                   // Default recipe
+        lang: "en",                          // Default language
+        minCharactersPerChunk: 24            // Minimum characters per chunk
     });
 
-    // Example text with multiple paragraphs
-    const text = `Machine learning is a branch of artificial intelligence (AI) and computer science which focuses on the use of data and algorithms to imitate the way that humans learn, gradually improving its accuracy.
-
-Deep learning is a subset of machine learning, which is essentially a neural network with three or more layers. These neural networks attempt to simulate the behavior of the human brain—albeit far from matching its ability—allowing it to "learn" from large amounts of data.
-
-Natural language processing (NLP) refers to the branch of computer science—and more specifically, the branch of artificial intelligence or AI—concerned with giving computers the ability to understand text and spoken words in much the same way human beings can.`;
+    // Example text to chunk
+    const text = `Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm for enhancing large language models with external knowledge. 
+                The effectiveness of RAG systems heavily depends on the thoughtful implementation of appropriate chunking strategies. 
+                While the field continues to evolve, practitioners must carefully consider their specific use cases and requirements when designing chunking solutions. 
+                Factors such as document characteristics, retrieval patterns, and performance requirements should guide the selection and optimization of chunking strategies.`;
 
     try {
-        // Chunk the text recursively
-        console.log("Chunking text with recursive chunker...");
-        const chunks = await chunker.chunk({ text });
-        
-        console.log("Recursive chunks:");
-        chunks.forEach((chunk, index) => {
-            console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            console.log(`--- (${chunk.text.length} characters)`);
+        // Chunk a single text
+        console.log("Chunking single text...");
+        const chunks = await chunker.chunk({ text: text });
+        console.log("Chunks:", chunks);
+        console.log("embeddings: ", (chunks as RecursiveChunk[]).map(chunk => chunk.embedding));
+        console.log("\nNumber of chunks:", chunks.length);
+
+        // Example of chunking multiple texts
+        const texts = [
+            "This is the first document to chunk.",
+            "This is another document that needs to be processed."
+        ];
+
+        console.log("\nChunking multiple texts...");
+        const batchChunks = await chunker.chunkBatch([{ text: texts[0] }, { text: texts[1] }]);
+        console.log("Batch chunks:", batchChunks);
+        console.log("\nNumber of documents processed:", batchChunks.length);
+
+        // Example with custom configuration
+        const customChunker = new RecursiveChunker(CHONKIE_API_KEY, {
+            chunkSize: 256,                    // Smaller chunks
+            recipe: "default",
+            lang: "en",
+            minCharactersPerChunk: 50          // Higher minimum characters
         });
-        
-        console.log("\nTotal chunks:", chunks.length);
+
+        console.log("\nChunking with custom configuration...");
+        const customChunks = await customChunker.chunk({ text: text });
+        console.log("Custom chunks:", customChunks);
+        console.log("\nNumber of custom chunks:", customChunks.length);
+
+        // Chunk the main README.md file
+        const markdownChunker = new RecursiveChunker(CHONKIE_API_KEY, {
+            chunkSize: 512,
+            recipe: "markdown",
+            lang: "en",
+            minCharactersPerChunk: 24
+        });
+        console.log("\nChunking README.md...");
+        const readme = "README.md";  // run this from the root of the project
+        const readmeChunks = await markdownChunker.chunk({ filepath: readme });
+        console.log("README.md chunks:", readmeChunks);
+        console.log("\nNumber of README.md chunks:", readmeChunks.length);
     } catch (error) {
-        console.error("Error during recursive chunking:", error);
+        console.error("Error during chunking:", error);
     }
 }
 
 // Run the demo
-main().catch(console_error);
+main().catch(console.error); 

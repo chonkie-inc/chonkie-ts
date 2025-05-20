@@ -5,10 +5,6 @@ const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
 async function main() {
     // Initialize the sentence chunker with your API key
     const chunker = new SentenceChunker(CHONKIE_API_KEY, {
-        language: "en",            // Language of the text
-        maxSentences: 3,           // Maximum sentences per chunk
-        maxChars: 500,             // Maximum characters per chunk
-        preserveParagraphs: true   // Whether to respect paragraph boundaries
     });
 
     // Example text with multiple sentences and paragraphs
@@ -22,7 +18,7 @@ Natural language processing allows computers to understand human language. This 
         // Chunk the text by sentences
         console.log("Chunking text with sentence chunker...");
         const chunks = await chunker.chunk({ text });
-        
+
         console.log("Sentence chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
@@ -30,7 +26,7 @@ Natural language processing allows computers to understand human language. This 
             const sentenceCount = (chunk.text.match(/[.!?]+/g) || []).length;
             console.log(`--- (${sentenceCount} sentences, ${chunk.text.length} characters)`);
         });
-        
+
         console.log("\nTotal chunks:", chunks.length);
     } catch (error) {
         console.error("Error during sentence chunking:", error);

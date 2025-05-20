@@ -54,7 +54,19 @@ export class CodeChunker extends CloudClient {
       body: formData,
     });
 
-    return data.map((chunk: any) => CodeChunk.fromDict(chunk));
+    // Convert from snake_case to camelCase
+    const camelCaseData = data.map((chunk: any) => {
+      return {
+        text: chunk.text,
+        startIndex: chunk.start_index,
+        endIndex: chunk.end_index,
+        tokenCount: chunk.token_count,
+        nodes: chunk.nodes,
+        embedding: chunk.embedding || undefined,
+      };
+    });
+
+    return camelCaseData.map((chunk: any) => CodeChunk.fromDict(chunk));
   }
 
   async chunkBatch(inputs: ChunkerInput[]): Promise<CodeChunk[][]> {

@@ -12,7 +12,6 @@ export interface CodeChunkData {
   startIndex: number;
   endIndex: number;
   tokenCount: number;
-  lang?: string;
   nodes?: TreeSitterNode[];
   embedding?: number[];
 }
@@ -22,8 +21,6 @@ export interface CodeChunkData {
  * Extends the base Chunk class.
  */
 export class CodeChunk extends Chunk {
-  /** The programming language of the code */
-  public lang?: string;
   /** The tree-sitter AST nodes in the chunk */
   public nodes?: TreeSitterNode[];
 
@@ -32,18 +29,16 @@ export class CodeChunk extends Chunk {
     startIndex: number;
     endIndex: number;
     tokenCount: number;
-    lang?: string;
     nodes?: TreeSitterNode[];
     embedding?: number[];
   }) {
     super(data);
-    this.lang = data.lang;
     this.nodes = data.nodes;
   }
 
   /** Return a string representation of the CodeChunk */
   public toString(): string {
-    return `CodeChunk(text=${this.text}, startIndex=${this.startIndex}, endIndex=${this.endIndex}, tokenCount=${this.tokenCount}, lang=${this.lang}, nodes=${this.nodes})`;
+    return `CodeChunk(text=${this.text}, startIndex=${this.startIndex}, endIndex=${this.endIndex}, tokenCount=${this.tokenCount}, nodes=${this.nodes})`;
   }
 
   /** Return the CodeChunk as a dictionary-like object */
@@ -51,7 +46,6 @@ export class CodeChunk extends Chunk {
     const baseDict = super.toDict();
     return {
       ...baseDict,
-      lang: this.lang,
       nodes: this.nodes,
     };
   }

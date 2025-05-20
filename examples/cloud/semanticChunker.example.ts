@@ -6,10 +6,6 @@ async function main() {
     // Initialize the semantic chunker with your API key
     const chunker = new SemanticChunker(CHONKIE_API_KEY, {
         embeddingModel: "all-MiniLM-L6-v2",
-        chunkSize: 300,           // Target chunk size in characters
-        minChunkSize: 100,        // Minimum chunk size
-        similarityThreshold: 0.8,  // Semantic similarity threshold
-        maxChunkSize: 500         // Maximum chunk size
     });
 
     // Example text about artificial intelligence
@@ -30,7 +26,7 @@ async function main() {
             console.log(chunk.text);
             console.log(`--- (${chunk.text.length} characters)`);
             if ('embedding' in chunk) {
-                console.log(`Embedding vector length: ${chunk.embedding.length}`);
+                console.log(`Embedding vector length: ${chunk.embedding!.length}`);
             }
         });
         
