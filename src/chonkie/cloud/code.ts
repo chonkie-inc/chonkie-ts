@@ -10,7 +10,6 @@ export interface CodeChunkerConfig {
   chunkSize?: number;
   language: string;
   includeNodes?: boolean;
-  returnType?: "texts" | "chunks";
 }
 
 export class CodeChunker extends CloudClient {
@@ -26,11 +25,10 @@ export class CodeChunker extends CloudClient {
       chunkSize: config.chunkSize || 1500,
       language: config.language,
       includeNodes: config.includeNodes ?? false,
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<CodeChunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<CodeChunk[]> {
     const formData = new FormData();
     
     if (input.filepath) {
@@ -49,19 +47,16 @@ export class CodeChunker extends CloudClient {
     formData.append("chunk_size", this.config.chunkSize.toString());
     formData.append("language", this.config.language);
     formData.append("include_nodes", this.config.includeNodes.toString());
-    formData.append("return_type", this.config.returnType);
 
     const data = await this.request<any>("/v1/chunk/code", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => CodeChunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => CodeChunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(CodeChunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<CodeChunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 

@@ -11,7 +11,6 @@ export interface RecursiveChunkerConfig {
   recipe?: string;
   lang?: string;
   minCharactersPerChunk?: number;
-  returnType?: "texts" | "chunks";
   overlap?: number;
 }
 
@@ -26,7 +25,6 @@ export class RecursiveChunker extends CloudClient {
       recipe: config.recipe || "default",
       lang: config.lang || "en",
       minCharactersPerChunk: config.minCharactersPerChunk || 12,
-      returnType: config.returnType || "chunks",
       overlap: config.overlap || 0,
     };
   }
@@ -48,16 +46,13 @@ export class RecursiveChunker extends CloudClient {
 
     formData.append("chunk_size", this.config.chunkSize.toString());
     formData.append("overlap", this.config.overlap.toString());
-    formData.append("return_type", this.config.returnType);
 
     const data = await this.request<any>("/v1/chunk/recursive", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => RecursiveChunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => RecursiveChunk.fromDict(chunk));
   }
 
   async chunkBatch(inputs: ChunkerInput[]): Promise<(RecursiveChunk[] | string[])[]> {
