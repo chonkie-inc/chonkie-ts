@@ -310,9 +310,9 @@ export class SentenceChunker extends BaseChunker {
    * Create a chunk from a list of sentences.
    * 
    * @param {Sentence[]} sentences - The sentences to create a chunk from.
-   * @returns {Promise<Chunk | string>} A promise that resolves to a Chunk object or a string.
+   * @returns {Promise<Chunk>} A promise that resolves to a Chunk object.
    */
-  private async _createChunk(sentences: Sentence[]): Promise<Chunk | string> {
+  private async _createChunk(sentences: Sentence[]): Promise<Chunk> {
     const chunkText = sentences.map(sentence => sentence.text).join("");
     // We calculate the token count here, as sum of the token counts of the sentences
     // does not match the token count of the chunk as a whole for some reason.
@@ -409,7 +409,7 @@ export class SentenceChunker extends BaseChunker {
     }
 
     // Return the appropriate type based on returnType
-    return chunks as Chunk[];
+    return chunks;
   }
 
   /**
