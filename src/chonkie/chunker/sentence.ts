@@ -46,13 +46,13 @@ export interface SentenceChunkerOptions {
  * const batchChunks = await chunker(["Text 1", "Text 2"]);
  * 
  * @type {SentenceChunker & {
- *   (text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
- *   (texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
+ *   (text: string, showProgress?: boolean): Promise<Chunk[]>;
+ *   (texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
  * }}
  */
 export type CallableSentenceChunker = SentenceChunker & {
-  (text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
-  (texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
+  (text: string, showProgress?: boolean): Promise<Chunk[]>;
+  (texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
 };
 
 
@@ -69,7 +69,7 @@ export type CallableSentenceChunker = SentenceChunker & {
  * @property {boolean} approximate - Whether to use approximate token counting.
  * @property {string[]} delim - List of sentence delimiters to use for splitting.
  * @property {('prev' | 'next' | null)} includeDelim - Whether to include the delimiter with the previous sentence ('prev'), next sentence ('next'), or exclude it (null).
- * @property {('chunks' | 'texts')} returnType - Return type: 'chunks' for Chunk objects, 'texts' for plain strings.
+ * @property {('chunks')} returnType - Return type: 'chunks' for Chunk objects.
  * 
  * @method chunk - Chunk a single text string.
  * @method chunkBatch - Chunk an array of text strings.
@@ -92,7 +92,6 @@ export class SentenceChunker extends BaseChunker {
   public readonly delim: string[];
   public readonly includeDelim: "prev" | "next" | null;
   public readonly sep: string;
-  public readonly returnType: "chunks" | "texts";
 
   /**
    * Private constructor. Use `SentenceChunker.create()` to instantiate.
@@ -105,7 +104,6 @@ export class SentenceChunker extends BaseChunker {
    * @param {boolean} approximate - Whether to use approximate token counting.
    * @param {string[]} delim - List of sentence delimiters to use for splitting.
    * @param {('prev' | 'next' | null)} includeDelim - Whether to include the delimiter with the previous sentence ('prev'), next sentence ('next'), or exclude it (null).
-   * @param {('chunks' | 'texts')} returnType - Return type: 'chunks' for Chunk objects, 'texts' for plain strings.
    */
   private constructor(
     tokenizer: Tokenizer,
@@ -115,8 +113,7 @@ export class SentenceChunker extends BaseChunker {
     minCharactersPerSentence: number,
     approximate: boolean,
     delim: string[],
-    includeDelim: "prev" | "next" | null,
-    returnType: "chunks" | "texts"
+    includeDelim: "prev" | "next" | null
   ) {
     super(tokenizer);
 
@@ -141,9 +138,6 @@ export class SentenceChunker extends BaseChunker {
     if (includeDelim !== "prev" && includeDelim !== "next" && includeDelim !== null) {
       throw new Error("includeDelim must be 'prev', 'next' or null");
     }
-    if (returnType !== "chunks" && returnType !== "texts") {
-      throw new Error("returnType must be either 'chunks' or 'texts'");
-    }
     if (approximate) {
       console.warn("Approximate has been deprecated and will be removed from next version onwards!");
     }
@@ -156,7 +150,6 @@ export class SentenceChunker extends BaseChunker {
     this.delim = delim;
     this.includeDelim = includeDelim;
     this.sep = "✄";
-    this.returnType = returnType;
   }
 
   /**
@@ -184,8 +177,7 @@ export class SentenceChunker extends BaseChunker {
       minCharactersPerSentence = 12,
       approximate = false,
       delim = [". ", "! ", "? ", "\n"],
-      includeDelim = "prev",
-      returnType = "chunks"
+      includeDelim = "prev"
     } = options;
 
     let tokenizerInstance: Tokenizer;
@@ -203,8 +195,7 @@ export class SentenceChunker extends BaseChunker {
       minCharactersPerSentence,
       approximate,
       delim,
-      includeDelim,
-      returnType
+      includeDelim
     );
 
     // Create the callable function wrapper
@@ -323,30 +314,26 @@ export class SentenceChunker extends BaseChunker {
    */
   private async _createChunk(sentences: Sentence[]): Promise<Chunk | string> {
     const chunkText = sentences.map(sentence => sentence.text).join("");
-    if (this.returnType === "texts") {
-      return chunkText;
-    } else {
-      // We calculate the token count here, as sum of the token counts of the sentences
-      // does not match the token count of the chunk as a whole for some reason.
-      const tokenCount = await this.tokenizer.countTokens(chunkText);
+    // We calculate the token count here, as sum of the token counts of the sentences
+    // does not match the token count of the chunk as a whole for some reason.
+    const tokenCount = await this.tokenizer.countTokens(chunkText);
 
-      return new SentenceChunk({
-        text: chunkText,
-        startIndex: sentences[0].startIndex,
-        endIndex: sentences[sentences.length - 1].endIndex,
-        tokenCount: tokenCount,
-        sentences: sentences
-      });
-    }
+    return new SentenceChunk({
+      text: chunkText,
+      startIndex: sentences[0].startIndex,
+      endIndex: sentences[sentences.length - 1].endIndex,
+      tokenCount: tokenCount,
+      sentences: sentences
+    });
   }
 
   /**
    * Split text into overlapping chunks based on sentences while respecting token limits.
    * 
    * @param {string} text - The text to split into chunks.
-   * @returns {Promise<Chunk[] | string[]>} A promise that resolves to an array of Chunk objects or strings.
+   * @returns {Promise<Chunk[]>} A promise that resolves to an array of Chunk objects.
    */
-  public async chunk(text: string): Promise<Chunk[] | string[]> {
+  public async chunk(text: string): Promise<Chunk[]> {
     if (!text.trim()) {
       return [];
     }
@@ -366,7 +353,7 @@ export class SentenceChunker extends BaseChunker {
     }
     tokenSums.push(sum);
 
-    const chunks: (Chunk | string)[] = [];
+    const chunks: Chunk[] = [];
     let pos = 0;
 
     while (pos < sentences.length) {
@@ -422,9 +409,7 @@ export class SentenceChunker extends BaseChunker {
     }
 
     // Return the appropriate type based on returnType
-    return this.returnType === "texts" 
-      ? chunks as string[]
-      : chunks as Chunk[];
+    return chunks as Chunk[];
   }
 
   /**
@@ -460,7 +445,6 @@ export class SentenceChunker extends BaseChunker {
       `minSentencesPerChunk=${this.minSentencesPerChunk}, ` +
       `minCharactersPerSentence=${this.minCharactersPerSentence}, ` +
       `approximate=${this.approximate}, delim=${this.delim}, ` +
-      `includeDelim=${this.includeDelim}, ` +
-      `returnType=${this.returnType})`;
+      `includeDelim=${this.includeDelim})`;
   }
 } 
