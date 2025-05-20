@@ -47,7 +47,8 @@ export class SDPMChunker extends CloudClient {
       const fileName = path.basename(input.filepath) || 'file.txt';
       formData.append("file", new Blob([fileContent]), fileName);
     } else if (input.text) {
-      formData.append("text", input.text);
+      // JSON encode the text
+      formData.append("text", JSON.stringify(input.text));
       // Append empty file to ensure multipart form
       formData.append("file", new Blob(), "text_input.txt");
     } else {
@@ -66,14 +67,9 @@ export class SDPMChunker extends CloudClient {
     formData.append("min_sentences", this.config.minSentences.toString());
     formData.append("min_characters_per_sentence", this.config.minCharactersPerSentence.toString());
     formData.append("threshold_step", this.config.thresholdStep.toString());
-    if (Array.isArray(this.config.delim)) {
-      this.config.delim.forEach(d => formData.append("delim", d));
-    } else {
-      formData.append("delim", this.config.delim);
-    }
-    if (this.config.includeDelim) {
-      formData.append("include_delim", this.config.includeDelim);
-    }
+    // Append delim as a string array
+    formData.append("delim", JSON.stringify(this.config.delim));
+    formData.append("include_delim", this.config.includeDelim || "prev");
     formData.append("return_type", this.config.returnType);
 
     const data = await this.request<any>("/v1/chunk/sdpm", {

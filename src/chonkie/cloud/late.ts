@@ -29,13 +29,14 @@ export class LateChunker extends CloudClient {
 
   async chunk(input: ChunkerInput): Promise<LateChunk[] | string[]> {
     const formData = new FormData();
-    
+
     if (input.filepath) {
       const fileContent = fs.readFileSync(input.filepath);
       const fileName = path.basename(input.filepath) || 'file.txt';
       formData.append("file", new Blob([fileContent]), fileName);
     } else if (input.text) {
-      formData.append("text", input.text);
+      // JSON encode the text
+      formData.append("text", JSON.stringify(input.text));
       // Append empty file to ensure multipart form
       formData.append("file", new Blob(), "text_input.txt");
     } else {
@@ -53,12 +54,10 @@ export class LateChunker extends CloudClient {
       body: formData,
     });
 
-    console.log(data);
-
     return data.map((chunk: any) => LateChunk.fromDict(chunk));
   }
 
   async chunkBatch(inputs: ChunkerInput[]): Promise<(LateChunk[] | string[])[]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
-} 
+}

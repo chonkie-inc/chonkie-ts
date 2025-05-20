@@ -12,7 +12,6 @@ export interface RecursiveChunkerConfig {
   lang?: string;
   minCharactersPerChunk?: number;
   returnType?: "texts" | "chunks";
-  overlap?: number;
 }
 
 export class RecursiveChunker extends CloudClient {
@@ -27,7 +26,6 @@ export class RecursiveChunker extends CloudClient {
       lang: config.lang || "en",
       minCharactersPerChunk: config.minCharactersPerChunk || 12,
       returnType: config.returnType || "chunks",
-      overlap: config.overlap || 0,
     };
   }
 
@@ -39,15 +37,18 @@ export class RecursiveChunker extends CloudClient {
       const fileName = path.basename(input.filepath) || 'file.txt';
       formData.append("file", new Blob([fileContent]), fileName);
     } else if (input.text) {
-      formData.append("text", input.text);
+      // JSON encode the text
+      formData.append("text", JSON.stringify(input.text));
       // Append empty file to ensure multipart form
       formData.append("file", new Blob(), "text_input.txt");
     } else {
       throw new Error("Either text or filepath must be provided");
     }
-
+    formData.append("tokenizer_or_token_counter", this.config.tokenizerOrTokenCounter);
     formData.append("chunk_size", this.config.chunkSize.toString());
-    formData.append("overlap", this.config.overlap.toString());
+    formData.append("recipe", this.config.recipe);
+    formData.append("lang", this.config.lang);
+    formData.append("min_characters_per_chunk", this.config.minCharactersPerChunk.toString());
     formData.append("return_type", this.config.returnType);
 
     const data = await this.request<any>("/v1/chunk/recursive", {
