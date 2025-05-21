@@ -31,17 +31,13 @@ SDPM (Semantic Document Processing Model) is designed for advanced document unde
         // Chunk the document
         console.log("Chunking document with SDPM chunker...");
         const chunks = await chunker.chunk({ text });
-        
+
         console.log("SDPM chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            console.log(`--- (${chunk.text.length} characters)`);
-            if ('metadata' in chunk) {
-                console.log("Metadata:", chunk.metadata);
-            }
+            console.log(chunk);
         });
-        
+
         console.log("\nTotal chunks:", chunks.length);
     } catch (error) {
         console.error("Error during SDPM chunking:", error);

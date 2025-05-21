@@ -1,5 +1,4 @@
 import { RecursiveChunk } from './recursive';
-import { SentenceData } from './sentence';
 
 /** Interface for LateChunk data */
 interface LateChunkData {
@@ -8,15 +7,15 @@ interface LateChunkData {
   endIndex: number;
   tokenCount: number;
   embedding?: number[];
-  sentences?: SentenceData[];
 }
 
-/** Class to represent the late chunk */
+/** Class to represent the late chunk 
+ * 
+ * @class LateChunk
+ */
 export class LateChunk extends RecursiveChunk {
   /** The embedding of the chunk */
   public embedding?: number[];
-  /** The sentences in the chunk */
-  public sentences?: SentenceData[];
 
   constructor(data: {
     text: string;
@@ -24,19 +23,25 @@ export class LateChunk extends RecursiveChunk {
     endIndex: number;
     tokenCount: number;
     embedding?: number[];
-    sentences?: SentenceData[];
   }) {
     super(data);
-    this.sentences = data.sentences;
     this.embedding = data.embedding ?? undefined;
   }
 
-  /** Return a string representation of the LateChunk */
+  /**
+   * Return a string representation of the LateChunk
+   *
+   * @returns {string} The string representation of the LateChunk.
+   */
   public toString(): string {
     return `LateChunk(text=${this.text}, startIndex=${this.startIndex}, endIndex=${this.endIndex}, tokenCount=${this.tokenCount}, embedding=${this.embedding})`;
   }
 
-  /** Return the LateChunk as a dictionary-like object */
+  /**
+   * Return the LateChunk as a dictionary-like object
+   *
+   * @returns {LateChunkData} The dictionary-like object.
+   */
   public toDict(): LateChunkData {
     return {
       text: this.text,
@@ -44,11 +49,16 @@ export class LateChunk extends RecursiveChunk {
       endIndex: this.endIndex,
       tokenCount: this.tokenCount,
       embedding: this.embedding,
-      sentences: this.sentences,
     };
   }
 
-  /** Create a LateChunk from a dictionary */
+
+  /**
+   * Create a LateChunk object from a dictionary-like object.
+   *
+   * @param {LateChunkData} data - The dictionary-like object.
+   * @returns {LateChunk} The LateChunk object.
+   */
   public static fromDict(data: LateChunkData): LateChunk {
     return new LateChunk({
       text: data.text,
@@ -56,7 +66,6 @@ export class LateChunk extends RecursiveChunk {
       endIndex: data.endIndex,
       tokenCount: data.tokenCount,
       embedding: data.embedding,
-      sentences: data.sentences
     });
   }
 } 

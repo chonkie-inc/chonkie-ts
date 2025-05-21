@@ -62,7 +62,6 @@ export class LateChunker extends CloudClient {
         endIndex: chunk.end_index,
         tokenCount: chunk.token_count,
         embedding: chunk.embedding || undefined,
-        sentences: chunk.sentences,
       };
     });
 

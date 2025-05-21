@@ -61,7 +61,7 @@ export class CodeChunker extends CloudClient {
         startIndex: chunk.start_index,
         endIndex: chunk.end_index,
         tokenCount: chunk.token_count,
-        nodes: chunk.nodes,
+        nodes: chunk.nodes || undefined,
         embedding: chunk.embedding || undefined,
       };
     });

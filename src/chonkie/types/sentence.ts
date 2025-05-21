@@ -53,26 +53,6 @@ export class Sentence {
     this.startIndex = data.startIndex;
     this.endIndex = data.endIndex;
     this.tokenCount = data.tokenCount;
-
-    this.validate();
-  }
-
-  private validate(): void {
-    if (typeof this.text !== 'string') {
-      throw new Error('Text must be a string.');
-    }
-    if (!Number.isInteger(this.startIndex) || this.startIndex < 0) {
-      throw new Error('Start index must be a non-negative integer.');
-    }
-    if (!Number.isInteger(this.endIndex) || this.endIndex < 0) {
-      throw new Error('End index must be a non-negative integer.');
-    }
-    if (this.startIndex > this.endIndex) {
-      throw new Error('Start index must be less than end index.');
-    }
-    if (!Number.isInteger(this.tokenCount) || this.tokenCount < 0) {
-      throw new Error('Token count must be a non-negative integer.');
-    }
   }
 
   /** Return a string representation of the Sentence */

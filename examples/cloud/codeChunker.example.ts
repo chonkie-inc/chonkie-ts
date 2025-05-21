@@ -46,12 +46,11 @@ class UserService {
         // Chunk the code
         console.log("Chunking TypeScript code...");
         const chunks = await chunker.chunk({ text: code });
-
+        
         console.log("Code chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            console.log(`--- (${chunk.text.split('\n').length} lines)`);
+            console.log(chunk);
         });
 
         console.log("\nTotal chunks:", chunks.length);

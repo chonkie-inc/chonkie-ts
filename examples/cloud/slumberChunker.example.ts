@@ -22,8 +22,7 @@ async function main() {
         console.log("Slumber chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            console.log(`--- (${chunk.text.length} characters)`);
+            console.log(chunk);
         });
 
         console.log("\nTotal chunks:", chunks.length);

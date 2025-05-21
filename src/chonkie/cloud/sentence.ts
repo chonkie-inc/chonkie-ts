@@ -71,7 +71,15 @@ export class SentenceChunker extends CloudClient {
         startIndex: chunk.start_index,
         endIndex: chunk.end_index,
         tokenCount: chunk.token_count,
-        sentences: chunk.sentences,
+        sentences: chunk.sentences.map((sentence: any) => {
+          return {
+            text: sentence.text,
+            startIndex: sentence.start_index,
+            endIndex: sentence.end_index,
+            tokenCount: sentence.token_count,
+            embedding: sentence.embedding || undefined,
+          };
+        }),
       };
     });
 

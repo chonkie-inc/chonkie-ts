@@ -79,7 +79,15 @@ export class SemanticChunker extends CloudClient {
         endIndex: chunk.end_index,
         tokenCount: chunk.token_count,
         embedding: chunk.embedding || undefined,
-        sentences: chunk.sentences,
+        sentences: chunk.sentences.map((sentence: any) => {
+          return {
+            text: sentence.text,
+            startIndex: sentence.start_index,
+            endIndex: sentence.end_index,
+            tokenCount: sentence.token_count,
+            embedding: sentence.embedding || undefined,
+          };
+        }),
       };
     });
 

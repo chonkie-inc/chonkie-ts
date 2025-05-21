@@ -24,9 +24,7 @@ Natural language processing allows computers to understand human language. This 
         console.log("Sentence chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            const sentenceCount = (chunk.text.match(/[.!?]+/g) || []).length;
-            console.log(`--- (${sentenceCount} sentences, ${chunk.text.length} characters)`);
+            console.log(chunk);
         });
 
         console.log("\nTotal chunks:", chunks.length);

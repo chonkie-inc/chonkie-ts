@@ -21,7 +21,7 @@ async function main() {
         console.log("Token chunks:");
         chunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
+            console.log(chunk);
         });
 
         console.log("\nTotal chunks:", chunks.length);
