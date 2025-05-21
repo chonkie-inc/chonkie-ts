@@ -1,8 +1,5 @@
 import { Chunk } from './base';
 
-
-// TODO: Figure out a way for the SentenceChunk to be able to visualize the sentence in the chunk when a console.log is called — for some reason it just shows up as [Sentence] right now. 
-
 /**
  * Represents the essential data for a sentence within a text.
  *
@@ -11,7 +8,7 @@ import { Chunk } from './base';
  * @property endIndex - The zero-based index indicating where the sentence ends in the original text (inclusive).
  * @property tokenCount - The number of tokens (words or subwords) in the sentence, useful for NLP tasks.
  */
-interface SentenceData {
+export interface SentenceData {
   text: string;
   startIndex: number;
   endIndex: number;
@@ -29,6 +26,7 @@ interface SentenceData {
  * @property {number} startIndex - The starting index of the sentence in the original text.
  * @property {number} endIndex - The ending index of the sentence in the original text.
  * @property {number} tokenCount - The number of tokens in the sentence.
+ * @property {number[]} [embedding] - The embedding vector for the sentence (array of numbers, or null if not present).
  *
  * @method toString Returns a string representation of the Sentence.
  * @returns {string}
@@ -55,26 +53,6 @@ export class Sentence {
     this.startIndex = data.startIndex;
     this.endIndex = data.endIndex;
     this.tokenCount = data.tokenCount;
-
-    this.validate();
-  }
-
-  private validate(): void {
-    if (typeof this.text !== 'string') {
-      throw new Error('Text must be a string.');
-    }
-    if (!Number.isInteger(this.startIndex) || this.startIndex < 0) {
-      throw new Error('Start index must be a non-negative integer.');
-    }
-    if (!Number.isInteger(this.endIndex) || this.endIndex < 0) {
-      throw new Error('End index must be a non-negative integer.');
-    }
-    if (this.startIndex > this.endIndex) {
-      throw new Error('Start index must be less than end index.');
-    }
-    if (!Number.isInteger(this.tokenCount) || this.tokenCount < 0) {
-      throw new Error('Token count must be a non-negative integer.');
-    }
   }
 
   /** Return a string representation of the Sentence */
@@ -113,6 +91,7 @@ interface SentenceChunkData {
   endIndex: number;
   tokenCount: number;
   sentences: SentenceData[];
+  embedding?: number[];
 }
 
 /**
@@ -150,9 +129,11 @@ export class SentenceChunk extends Chunk {
     endIndex: number;
     tokenCount: number;
     sentences: Sentence[];
+    embedding?: number[];
   }) {
     super(data);
     this.sentences = data.sentences;
+    this.embedding = data.embedding ?? undefined;
   }
 
   /**
@@ -199,6 +180,7 @@ export class SentenceChunk extends Chunk {
       endIndex: data.endIndex,
       tokenCount: data.tokenCount,
       sentences,
+      embedding: data.embedding ?? undefined,
     });
   }
 } 

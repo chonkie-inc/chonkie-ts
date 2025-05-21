@@ -18,7 +18,6 @@ describe('RecursiveChunker', () => {
     expect(chunker).toBeDefined();
     expect(chunker.rules).toBeDefined();
     expect(chunker.chunkSize).toBe(512);
-    expect(chunker.returnType).toBe('chunks');
   });
 
   it('should initialize correctly with custom parameters', async () => {
@@ -34,7 +33,6 @@ describe('RecursiveChunker', () => {
     expect(chunker).toBeDefined();
     expect(chunker.rules).toBe(rules);
     expect(chunker.chunkSize).toBe(256);
-    expect(chunker.returnType).toBe('chunks');
   });
 
   it('should chunk text correctly', async () => {

@@ -94,7 +94,6 @@ export type CallableRecursiveChunker = RecursiveChunker & {
 export class RecursiveChunker extends BaseChunker {
   public readonly chunkSize: number;
   public readonly minCharactersPerChunk: number;
-  public readonly returnType: "chunks" | "texts";
   public readonly rules: RecursiveRules;
   public readonly sep: string;
   private readonly _CHARS_PER_TOKEN: number = 6.5;
@@ -106,8 +105,7 @@ export class RecursiveChunker extends BaseChunker {
     tokenizer: Tokenizer,
     chunkSize: number,
     rules: RecursiveRules,
-    minCharactersPerChunk: number,
-    returnType: "chunks" | "texts"
+    minCharactersPerChunk: number
   ) {
     super(tokenizer);
 
@@ -117,16 +115,12 @@ export class RecursiveChunker extends BaseChunker {
     if (minCharactersPerChunk <= 0) {
       throw new Error("minCharactersPerChunk must be greater than 0");
     }
-    if (returnType !== "chunks" && returnType !== "texts") {
-      throw new Error("returnType must be either 'chunks' or 'texts'");
-    }
     if (!(rules instanceof RecursiveRules)) {
       throw new Error("rules must be a RecursiveRules object");
     }
 
     this.chunkSize = chunkSize;
     this.minCharactersPerChunk = minCharactersPerChunk;
-    this.returnType = returnType;
     this.rules = rules;
     this.sep = "✄";
   }
@@ -192,8 +186,7 @@ export class RecursiveChunker extends BaseChunker {
       tokenizerInstance,
       chunkSize,
       rules,
-      minCharactersPerChunk,
-      returnType
+      minCharactersPerChunk
     );
 
     // Create the callable function wrapper
@@ -432,29 +425,21 @@ export class RecursiveChunker extends BaseChunker {
     text: string,
     level: number = 0,
     startOffset: number = 0
-  ): Promise<(RecursiveChunk | string)[]> {
+  ): Promise<RecursiveChunk[]> {
     if (!text) {
       return [];
     }
 
     if (level >= this.rules.length) {
-      if (this.returnType === "texts") {
-        return [text];
-      }
-      if (this.returnType === "chunks") {
-        const tokenCount = await this._estimateTokenCount(text);
-        return [
-          this._makeChunks(
+      const tokenCount = await this._estimateTokenCount(text);
+      return [
+        this._makeChunks(
             text,
             tokenCount,
             level,
             startOffset
           )
-        ];
-      }
-      throw new Error(
-        `Invalid returnType ${this.returnType}. Must be 'chunks' or 'texts'.`
-      );
+      ];
     }
 
     const currRule = this.rules.getLevel(level);
@@ -491,7 +476,7 @@ export class RecursiveChunker extends BaseChunker {
     }
 
     // Chunk long merged splits
-    const chunks: (RecursiveChunk | string)[] = [];
+    const chunks: RecursiveChunk[] = [];
     let currentOffset = startOffset;
     for (let i = 0; i < merged.length; i++) {
       const split = merged[i];
@@ -499,13 +484,9 @@ export class RecursiveChunker extends BaseChunker {
       if (tokenCount > this.chunkSize) {
         chunks.push(...await this._recursiveChunk(split, level + 1, currentOffset));
       } else {
-        if (this.returnType === "chunks") {
-          chunks.push(
-            this._makeChunks(split, tokenCount, level, currentOffset)
-          );
-        } else if (this.returnType === "texts") {
-          chunks.push(split);
-        }
+        chunks.push(
+          this._makeChunks(split, tokenCount, level, currentOffset)
+        );
       }
       // Update the offset by the length of the processed split.
       currentOffset += split.length;
@@ -520,14 +501,11 @@ export class RecursiveChunker extends BaseChunker {
    * It takes a single text string and returns an array of chunks or strings depending on the returnType.
    * 
    * @param {string} text - The text to be chunked
-   * @returns {Promise<Chunk[] | string[]>} A promise that resolves to an array of Chunk objects or strings
+   * @returns {Promise<Chunk[]>} A promise that resolves to an array of Chunk objects
    */
-  public async chunk(text: string): Promise<Chunk[] | string[]> {
+  public async chunk(text: string): Promise<Chunk[]> {
     const result = await this._recursiveChunk(text, 0, 0);
-    if (this.returnType === "chunks") {
-      return result as Chunk[];
-    }
-    return result as string[];
+    return result as Chunk[];
   }
 
   /**
@@ -541,7 +519,6 @@ export class RecursiveChunker extends BaseChunker {
   public toString(): string {
     return `RecursiveChunker(tokenizer=${this.tokenizer}, ` +
       `rules=${this.rules}, chunkSize=${this.chunkSize}, ` +
-      `minCharactersPerChunk=${this.minCharactersPerChunk}, ` +
-      `returnType=${this.returnType})`;
+      `minCharactersPerChunk=${this.minCharactersPerChunk})`;
   }
 } 

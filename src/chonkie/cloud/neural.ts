@@ -1,12 +1,11 @@
 /** Neural chunker client for Chonkie API. */
 
-import { CloudClient } from "./base";
+import { CloudClient, ChunkerInput } from "./base";
 import { Chunk } from "../types/base";
 
 export interface NeuralChunkerConfig {
   model?: string;
   minCharactersPerChunk?: number;
-  returnType?: "texts" | "chunks";
 }
 
 export class NeuralChunker extends CloudClient {
@@ -17,34 +16,47 @@ export class NeuralChunker extends CloudClient {
     this.config = {
       model: config.model || "mirth/chonky_modernbert_large_1",
       minCharactersPerChunk: config.minCharactersPerChunk || 10,
-      returnType: config.returnType || "chunks",
     };
   }
 
-  async chunk(text: string): Promise<Chunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<Chunk[]> {
     const formData = new FormData();
-    formData.append("file", new Blob([text], { type: "text/plain" }));
+
+    if (input.filepath) {
+      formData.append("file", input.filepath);
+    } else if (input.text) {
+      // JSON encode the text
+      formData.append("text", JSON.stringify(input.text));
+      // Append empty file to ensure multipart form
+      formData.append("file", new Blob(), "text_input.txt");
+    } else {
+      throw new Error("Either text or file must be provided");
+    }
+
     formData.append("embedding_model", this.config.model);
-    formData.append("chunk_size", this.config.minCharactersPerChunk.toString());
-    formData.append("similarity_threshold", "0.7");
-    formData.append("min_sentences", "1");
-    formData.append("min_characters_per_sentence", "10");
-    formData.append("return_type", this.config.returnType);
+    formData.append("min_characters_per_chunk", this.config.minCharactersPerChunk.toString());
+    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/neural", {
       method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
-      : data;
+    // Convert from snake_case to camelCase
+    const camelCaseData = data.map((chunk: any) => {
+      return {
+        text: chunk.text,
+        startIndex: chunk.start_index,
+        endIndex: chunk.end_index,
+        tokenCount: chunk.token_count,
+        embedding: chunk.embedding || undefined,
+      };
+    });
+
+    return camelCaseData.map((chunk: any) => Chunk.fromDict(chunk));
   }
 
-  async chunkBatch(texts: string[]): Promise<(Chunk[] | string[])[]> {
-    return Promise.all(texts.map(text => this.chunk(text)));
+  async chunkBatch(inputs: ChunkerInput[]): Promise<Chunk[][]> {
+    return Promise.all(inputs.map(input => this.chunk(input)));
   }
 } 
