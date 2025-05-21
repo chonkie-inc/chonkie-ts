@@ -157,10 +157,10 @@ describe('TokenChunker', () => {
 
     it('should have a correct string representation', async () => {
         const chonkieTokenizer = await getChonkieTokenizer(defaultModel);
-        const chunker = await TokenChunker.create({tokenizer: chonkieTokenizer, chunkSize: 512, chunkOverlap: 128, returnType: "texts"});
-        // Example: TokenChunker(tokenizer=transformers, chunkSize=512, chunkOverlap=128, returnType='texts')
+        const chunker = await TokenChunker.create({tokenizer: chonkieTokenizer, chunkSize: 512, chunkOverlap: 128});
+        // Example: TokenChunker(tokenizer=transformers, chunkSize=512, chunkOverlap=128)
         expect(chunker.toString()).toBe(
-            `TokenChunker(tokenizer=${chonkieTokenizer.backend}, chunkSize=512, chunkOverlap=128, returnType='texts')`
+            `TokenChunker(tokenizer=${chonkieTokenizer.backend}, chunkSize=512, chunkOverlap=128)`
         );
     });
 
@@ -284,20 +284,6 @@ describe('TokenChunker', () => {
         await verifyChunkIndices(results[1], sampleComplexMarkdownText);
     });
 
-    it('should return texts when returnType is "texts"', async () => {
-        const chunker = await TokenChunker.create({tokenizer: defaultModel, chunkSize: 100, chunkOverlap: 20, returnType: "texts"});
-        const chunks = await chunker.chunk(sampleText);
-
-        expect(chunks.length).toBeGreaterThan(0);
-        expect(typeof chunks[0]).toBe('string');
-
-        const chonkieTokenizer = await getChonkieTokenizer(defaultModel);
-        for (const textChunk of chunks as string[]) {
-            const tokenCount = (await chonkieTokenizer.encode(textChunk)).length;
-            expect(tokenCount).toBeLessThanOrEqual(100); // Or slightly more due to tokenization artifacts at edges
-        }
-    });
-
     it('should handle edge cases in token counting', async () => {
         const chunker = await TokenChunker.create({tokenizer: defaultModel, chunkSize: 100, chunkOverlap: 20});
         
@@ -381,12 +367,6 @@ describe('TokenChunker', () => {
 
             const chunker2 = await TokenChunker.create({tokenizer: defaultModel, chunkSize: 100, chunkOverlap: 0.109}); // 10.9 -> floor(10.9) = 10
             expect(chunker2.chunkOverlap).toBe(10);
-        });
-
-        it('should throw error for invalid returnType', async () => {
-            await expect(async () => {
-                await TokenChunker.create({tokenizer: defaultModel, chunkSize: 100, chunkOverlap: 10, returnType: "invalid" as any});
-            }).rejects.toThrow("returnType must be either 'chunks' or 'texts'.");
         });
     });
 });

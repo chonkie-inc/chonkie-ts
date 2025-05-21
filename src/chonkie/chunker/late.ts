@@ -12,7 +12,6 @@ export interface LateChunkerOptions {
   tokenizerOrName?: string | Tokenizer;
   chunkSize?: number;
   chunkOverlap?: number;
-  returnType?: "chunks" | "texts";
   embeddingModel?: string;
 }
 
@@ -22,14 +21,13 @@ export interface LateChunkerOptions {
  * in turn calls `chunk` or `chunkBatch`.
  */
 export type CallableLateChunker = LateChunker & {
-  (text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
-  (texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
+  (text: string, showProgress?: boolean): Promise<Chunk[]>;
+  (texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
 };
 
 export class LateChunker extends BaseChunker {
   public readonly chunkSize: number;
   public readonly chunkOverlap: number;
-  public readonly returnType: "chunks" | "texts";
   public readonly embeddingModel?: string;
   private _embeddingModel?: any; // Will be initialized if embeddingModel is provided
 
@@ -40,7 +38,6 @@ export class LateChunker extends BaseChunker {
     tokenizer: Tokenizer,
     chunkSize: number,
     chunkOverlap: number,
-    returnType: "chunks" | "texts",
     embeddingModel?: string
   ) {
     super(tokenizer);
@@ -54,13 +51,9 @@ export class LateChunker extends BaseChunker {
     if (chunkOverlap >= chunkSize) {
       throw new Error("chunkOverlap must be less than chunkSize");
     }
-    if (returnType !== "chunks" && returnType !== "texts") {
-      throw new Error("returnType must be either 'chunks' or 'texts'");
-    }
 
     this.chunkSize = chunkSize;
     this.chunkOverlap = chunkOverlap;
-    this.returnType = returnType;
     this.embeddingModel = embeddingModel;
   }
 
@@ -111,7 +104,6 @@ export class LateChunker extends BaseChunker {
       tokenizerOrName = "gpt2",
       chunkSize = 512,
       chunkOverlap = 0,
-      returnType = "chunks",
       embeddingModel = "all-MiniLM-L6-v2"
     } = options;
 
@@ -126,7 +118,6 @@ export class LateChunker extends BaseChunker {
       tokenizerInstance,
       chunkSize,
       chunkOverlap,
-      returnType,
       embeddingModel
     );
 
@@ -231,7 +222,7 @@ export class LateChunker extends BaseChunker {
   /**
    * Split text into overlapping chunks of specified token size.
    */
-  public async chunk(text: string): Promise<Chunk[] | string[]> {
+  public async chunk(text: string): Promise<Chunk[]> {
     if (!text.trim()) {
       return [];
     }
@@ -246,13 +237,9 @@ export class LateChunker extends BaseChunker {
       return [];
     }
 
-    if (this.returnType === "chunks") {
-      const tokenCounts = tokenGroups.map((group) => group.length);
-      const chunkTexts = await this.tokenizer.decodeBatch(tokenGroups);
-      return this._createChunks(chunkTexts, tokenGroups, tokenCounts);
-    } else {
-      return this.tokenizer.decodeBatch(tokenGroups);
-    }
+    const tokenCounts = tokenGroups.map((group) => group.length);
+    const chunkTexts = await this.tokenizer.decodeBatch(tokenGroups);
+    return this._createChunks(chunkTexts, tokenGroups, tokenCounts);
   }
 
   /**
@@ -261,6 +248,6 @@ export class LateChunker extends BaseChunker {
   public toString(): string {
     return `LateChunker(tokenizer=${this.tokenizer}, ` +
       `chunkSize=${this.chunkSize}, chunkOverlap=${this.chunkOverlap}, ` +
-      `returnType=${this.returnType}, embeddingModel=${this.embeddingModel})`;
+      `embeddingModel=${this.embeddingModel})`;
   }
 } 

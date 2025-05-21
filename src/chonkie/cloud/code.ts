@@ -47,7 +47,6 @@ export class CodeChunker extends CloudClient {
     formData.append("chunk_size", this.config.chunkSize.toString());
     formData.append("language", this.config.language);
     formData.append("include_nodes", this.config.includeNodes.toString());
-    formData.append("return_type", "chunks");
 
     const data = await this.request<any>("/v1/chunk/code", {
       method: "POST",

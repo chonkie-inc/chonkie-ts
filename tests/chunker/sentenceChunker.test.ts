@@ -16,14 +16,12 @@ describe('SentenceChunker', () => {
     const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b'});
     expect(chunker).toBeDefined();
     expect(chunker.chunkSize).toBe(512);
-    expect(chunker.returnType).toBe('chunks');
   });
 
   it('should initialize correctly with custom parameters', async () => {
     const chunker = await SentenceChunker.create({tokenizer: 'EleutherAI/gpt-j-6b', chunkSize: 256});
     expect(chunker).toBeDefined();
     expect(chunker.chunkSize).toBe(256);
-    expect(chunker.returnType).toBe('chunks');
   });
 
   it('should chunk text correctly', async () => {

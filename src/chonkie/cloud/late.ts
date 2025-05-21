@@ -27,7 +27,7 @@ export class LateChunker extends CloudClient {
     };
   }
 
-  async chunk(input: ChunkerInput): Promise<LateChunk[] | string[]> {
+  async chunk(input: ChunkerInput): Promise<LateChunk[]> {
     const formData = new FormData();
 
     if (input.filepath) {
@@ -68,7 +68,7 @@ export class LateChunker extends CloudClient {
     return camelCaseData.map((chunk: any) => LateChunk.fromDict(chunk));
   }
 
-  async chunkBatch(inputs: ChunkerInput[]): Promise<(LateChunk[] | string[])[]> {
+  async chunkBatch(inputs: ChunkerInput[]): Promise<LateChunk[][]> {
     return Promise.all(inputs.map(input => this.chunk(input)));
   }
 }
