@@ -1,6 +1,8 @@
 import { NeuralChunker } from "chonkie/cloud";
+import * as dotenv from 'dotenv';
 
-const CHONKIE_API_KEY = "e895eea7-390d-42d2-9f32-d368db22df57";
+dotenv.config({ path: '.env' });
+const CHONKIE_API_KEY = process.env.CHONKIE_API_KEY || "";
 
 async function main() {
     // Initialize the neural chunker with your API key

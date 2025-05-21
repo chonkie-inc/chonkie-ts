@@ -1,8 +1,16 @@
 import { CodeChunker } from "chonkie/cloud";
+import * as dotenv from 'dotenv';
 
-const CHONKIE_API_KEY = "<YOUR API KEY HERE";
+dotenv.config({ path: '.env' });
+const CHONKIE_API_KEY = process.env.CHONKIE_API_KEY || "";
 
 async function main() {
+
+    if (!CHONKIE_API_KEY) {
+        console.error("CHONKIE_API_KEY is not set");
+        return;
+    }
+
     // Initialize the code chunker with your API key
     const chunker = new CodeChunker(CHONKIE_API_KEY, {
         language: "typescript",  // Programming language of the code

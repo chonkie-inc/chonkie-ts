@@ -1,6 +1,8 @@
 import { TokenChunker } from "chonkie/cloud";
+import * as dotenv from 'dotenv';
 
-const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
+dotenv.config({ path: '.env' });
+const CHONKIE_API_KEY = process.env.CHONKIE_API_KEY || "";
 
 async function main() {
     // Initialize the token chunker with your API key

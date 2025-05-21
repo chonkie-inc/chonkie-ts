@@ -1,8 +1,10 @@
 import { OverlapRefinery } from "chonkie/cloud";
 import { Chunk } from "chonkie";
 import { TokenChunker } from "chonkie";
+import * as dotenv from 'dotenv';
 
-const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
+dotenv.config({ path: '.env' });
+const CHONKIE_API_KEY = process.env.CHONKIE_API_KEY || "";
 
 async function main() {
     // Initialize the overlap refinery with your API key

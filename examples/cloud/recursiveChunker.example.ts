@@ -1,7 +1,10 @@
 import { RecursiveChunker } from "chonkie/cloud";
 import { RecursiveChunk } from "chonkie/types";
+import * as dotenv from 'dotenv';
 
-const CHONKIE_API_KEY = "<YOUR API KEY HERE>";
+dotenv.config({ path: '.env' });
+const CHONKIE_API_KEY = process.env.CHONKIE_API_KEY || "";
+
 async function main() {
     // Initialize the late chunker with your API key
     const chunker = new RecursiveChunker(CHONKIE_API_KEY, {

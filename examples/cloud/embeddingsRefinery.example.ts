@@ -1,7 +1,10 @@
 import { Chunk, TokenChunker } from "chonkie";
 import { EmbeddingsRefinery } from "chonkie/cloud";
+import * as dotenv from 'dotenv';
 
-const CHONKIE_API_KEY = "e895eea7-390d-42d2-9f32-d368db22df57";
+dotenv.config({ path: '.env' });
+
+const CHONKIE_API_KEY = process.env.CHONKIE_API_KEY || "";
 
 async function main() {
     // Initialize the embeddings refinery with your API key
