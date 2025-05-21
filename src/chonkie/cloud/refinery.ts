@@ -11,7 +11,6 @@ export interface EmbeddingsRefineryConfig {
   similarityThreshold?: number;
   minSentences?: number;
   minCharactersPerSentence?: number;
-  returnType?: "chunks" | "strings";
 }
 
 export interface OverlapRefineryConfig {
@@ -37,7 +36,6 @@ export class EmbeddingsRefinery extends CloudClient {
       similarityThreshold: config.similarityThreshold ?? 0.8,
       minSentences: config.minSentences ?? 1,
       minCharactersPerSentence: config.minCharactersPerSentence ?? 10,
-      returnType: config.returnType ?? "chunks",
     };
   }
 
@@ -72,16 +70,13 @@ export class EmbeddingsRefinery extends CloudClient {
     formData.append("similarity_threshold", this.config.similarityThreshold.toString());
     formData.append("min_sentences", this.config.minSentences.toString());
     formData.append("min_characters_per_sentence", this.config.minCharactersPerSentence.toString());
-    formData.append("return_type", this.config.returnType);
 
     const data = await this.request<any>("/v1/chunk/refinery", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => Chunk.fromDict(chunk));
   }
 }
 

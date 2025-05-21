@@ -6,7 +6,6 @@ import { Chunk } from "../types/base";
 export interface NeuralChunkerConfig {
   model?: string;
   minCharactersPerChunk?: number;
-  returnType?: "texts" | "chunks";
 }
 
 export class NeuralChunker extends CloudClient {
@@ -17,7 +16,6 @@ export class NeuralChunker extends CloudClient {
     this.config = {
       model: config.model || "mirth/chonky_modernbert_large_1",
       minCharactersPerChunk: config.minCharactersPerChunk || 10,
-      returnType: config.returnType || "chunks",
     };
   }
 
@@ -38,17 +36,13 @@ export class NeuralChunker extends CloudClient {
     formData.append("chunk_size", this.config.minCharactersPerChunk.toString());
     formData.append("similarity_threshold", "0.7");
     formData.append("min_sentences", "1");
-    formData.append("min_characters_per_sentence", "10");
-    formData.append("return_type", this.config.returnType);
 
     const data = await this.request<any>("/v1/chunk/neural", {
       method: "POST",
       body: formData,
     });
 
-    return this.config.returnType === "chunks" 
-      ? data.map((chunk: any) => Chunk.fromDict(chunk))
-      : data;
+    return data.map((chunk: any) => Chunk.fromDict(chunk));
   }
 
   async chunkBatch(inputs: ChunkerInput[]): Promise<(Chunk[] | string[])[]> {

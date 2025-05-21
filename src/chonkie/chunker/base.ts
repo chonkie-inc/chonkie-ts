@@ -52,19 +52,19 @@ export abstract class BaseChunker {
    *
    * @param {string | string[]} textOrTexts - The text or array of texts to chunk.
    * @param {boolean} [showProgress=false] - Whether to display progress for batch operations (only applies to arrays).
-   * @returns {Promise<Chunk[] | string[] | (Chunk[] | string[])[]>} The chunked result(s).
+   * @returns {Promise<Chunk[] | Chunk[][]>} The chunked result(s).
    * @throws {Error} If input is not a string or array of strings.
    */
-  public async call(text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
-  public async call(texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
+  public async call(text: string, showProgress?: boolean): Promise<Chunk[]>;
+  public async call(texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
   public async call(
     textOrTexts: string | string[],
     showProgress: boolean = false
-  ): Promise<(Chunk[] | string[]) | (Chunk[] | string[])[]> {
+  ): Promise<Chunk[] | Chunk[][]> {
     if (typeof textOrTexts === 'string') {
-      return this.chunk(textOrTexts);
+      return this.chunk(textOrTexts) as Promise<Chunk[]>;
     } else if (Array.isArray(textOrTexts)) {
-      return this.chunkBatch(textOrTexts, showProgress);
+      return this.chunkBatch(textOrTexts, showProgress) as Promise<Chunk[][]>;
     } else {
       // This case should ideally not be reached due to TypeScript's type checking
       // if the public overloads are used correctly.
@@ -78,13 +78,13 @@ export abstract class BaseChunker {
    * @protected
    * @param {string[]} texts - The texts to chunk.
    * @param {boolean} [showProgress=false] - Whether to display progress in the console.
-   * @returns {Promise<(Chunk[] | string[])[]>} An array of chunked results for each input text.
+   * @returns {Promise<Chunk[][]>} An array of chunked results for each input text.
    */
   protected async _sequential_batch_processing(
     texts: string[],
     showProgress: boolean = false
-  ): Promise<(Chunk[] | string[])[]> {
-    const results: (Chunk[] | string[])[] = [];
+  ): Promise<Chunk[][]> {
+    const results: Chunk[][] = [];
     const total = texts.length;
     for (let i = 0; i < total; i++) {
       if (showProgress && total > 1) {
@@ -105,12 +105,12 @@ export abstract class BaseChunker {
    * @protected
    * @param {string[]} texts - The texts to chunk.
    * @param {boolean} [showProgress=false] - Whether to display progress in the console.
-   * @returns {Promise<(Chunk[] | string[])[]>} An array of chunked results for each input text.
+   * @returns {Promise<Chunk[][]>} An array of chunked results for each input text.
    */
   protected async _concurrent_batch_processing(
     texts: string[],
     showProgress: boolean = false
-  ): Promise<(Chunk[] | string[])[]> {
+  ): Promise<Chunk[][]> {
     const total = texts.length;
     let completedCount = 0;
 
@@ -140,10 +140,10 @@ export abstract class BaseChunker {
    * Abstract method to chunk a single text. Must be implemented by subclasses.
    *
    * @param {string} text - The text to chunk.
-   * @returns {Promise<Chunk[] | string[]>} The chunked representation of the input text.
+   * @returns {Promise<Chunk[]>} The chunked representation of the input text.
    * @abstract
    */
-  public abstract chunk(text: string): Promise<Chunk[] | string[]>;
+  public abstract chunk(text: string): Promise<Chunk[]>;
 
   /**
    * Chunk a batch of texts, using either concurrent or sequential processing.
@@ -152,18 +152,18 @@ export abstract class BaseChunker {
    *
    * @param {string[]} texts - The texts to chunk.
    * @param {boolean} [showProgress=true] - Whether to display progress in the console.
-   * @returns {Promise<(Chunk[] | string[])[]>} An array of chunked results for each input text.
+   * @returns {Promise<Chunk[][]>} An array of chunked results for each input text.
    */
   public async chunkBatch(
     texts: string[],
     showProgress: boolean = true
-  ): Promise<(Chunk[] | string[])[]> {
+  ): Promise<Chunk[][]> {
     if (texts.length === 0) {
       return [];
     }
     // If only one text, process it directly without batch overhead, progress not shown for single item.
     if (texts.length === 1) {
-      return [await this.chunk(texts[0])];
+      return [await this.chunk(texts[0]) as Chunk[] ];
     }
 
     // For multiple texts, use selected batch processing strategy
