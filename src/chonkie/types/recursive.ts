@@ -233,6 +233,7 @@ interface RecursiveChunkData {
   endIndex: number;
   tokenCount: number;
   level?: number;
+  embedding?: number[];
 }
 
 /** Class to represent recursive chunks
@@ -250,6 +251,7 @@ export class RecursiveChunk extends Chunk {
     endIndex: number;
     tokenCount: number;
     level?: number;
+    embedding?: number[];
   }) {
     super(data);
     this.level = data.level;

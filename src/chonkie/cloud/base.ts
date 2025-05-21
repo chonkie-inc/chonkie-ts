@@ -1,10 +1,13 @@
 /** Base cloud client for Chonkie API. */
 
-import { Chunk } from "../types/base";
-
 export interface CloudClientConfig {
   apiKey: string;
   baseUrl?: string;
+}
+
+export interface ChunkerInput {
+  text?: string;
+  filepath?: string;
 }
 
 export class CloudClient {
@@ -26,14 +29,17 @@ export class CloudClient {
   ): Promise<T> {
     const { method = "POST", body, headers = {} } = options;
 
+    // Don't set Content-Type or stringify body if it's FormData
+    const isFormData = body instanceof FormData;
+    const requestHeaders = {
+      "Authorization": `Bearer ${this.apiKey}`,
+      ...headers,
+    };
+
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method,
-      headers: {
-        "Authorization": `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers: requestHeaders,
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
     });
 
     if (!response.ok) {
