@@ -3,6 +3,7 @@ export { Chunk, } from './types';
 export {
     TokenChunker,
     SentenceChunker,
-    RecursiveChunker
+    RecursiveChunker,
+    CodeChunker
 } from './chunker';
 export { Visualizer } from './utils/viz'; 
