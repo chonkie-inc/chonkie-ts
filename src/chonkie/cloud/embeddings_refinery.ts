@@ -26,6 +26,9 @@ export class EmbeddingsRefinery extends CloudClient {
         chunks: chunks.map(chunk => chunk.toDict()),
         embedding_model: this.config.embeddingModel,
       },
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     return response.map(chunk => Chunk.fromDict(chunk));

@@ -28,9 +28,18 @@ export class OverlapRefinery extends CloudClient {
     }
 
     async refine(chunks: Chunk[]): Promise<Chunk[]> {
-        const response = await this.request<Chunk[]>("/v1/refine/overlap", {
+        // Create snake cased chunks for the request
+        const snakeCasedChunks = chunks.map(chunk => {
+            return {
+                text: chunk.text,
+                start_index: chunk.startIndex,
+                end_index: chunk.endIndex,
+                token_count: chunk.tokenCount,
+            };
+        });
+        const response = await this.request<any>("/v1/refine/overlap", {
             body: {
-                chunks: chunks.map(chunk => chunk.toDict()),
+                chunks: snakeCasedChunks,
                 tokenizer_or_token_counter: this.config.tokenizerOrTokenCounter,
                 context_size: this.config.contextSize,
                 mode: this.config.mode,
@@ -39,8 +48,21 @@ export class OverlapRefinery extends CloudClient {
                 lang: this.config.lang,
                 merge: this.config.merge,
             },
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
-
-        return response.map(chunk => Chunk.fromDict(chunk));
+        // Merge the response chunks with the original chunks
+        const mergedChunks = response.map((chunk: any, index: number) => {
+            const originalChunk = chunks[index];
+            return {
+                ...originalChunk,
+                text: chunk.text,
+                startIndex: chunk.start_index,
+                endIndex: chunk.end_index,
+                tokenCount: chunk.token_count,
+            };
+        });
+        return mergedChunks;
     }
 } 

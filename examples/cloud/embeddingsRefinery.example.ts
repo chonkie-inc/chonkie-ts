@@ -27,11 +27,7 @@ async function main() {
         console.log("Refined chunks with embeddings:");
         refinedChunks.forEach((chunk: Chunk, index: number) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            if ('embedding' in chunk) {
-                console.log(`Embedding vector length: ${chunk.embedding!.length}`);
-                console.log("First 5 dimensions:", chunk.embedding!.slice(0, 5));
-            }
+            console.log(chunk);
         });
         
         console.log("\nTotal chunks processed:", refinedChunks.length);

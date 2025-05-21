@@ -28,7 +28,11 @@ async function main() {
         chunkSize: 64,
     });
     const chunks = await chunker.chunk(text);
-
+    console.log("Original chunks:")
+    chunks.forEach((chunk, index) => {
+        console.log(`\nChunk ${index + 1}:`);
+        console.log(chunk);
+    });
     try {
         // Add overlap between chunks
         console.log("Adding overlap between chunks...");
@@ -37,8 +41,7 @@ async function main() {
         console.log("Refined chunks with overlap:");
         refinedChunks.forEach((chunk, index) => {
             console.log(`\nChunk ${index + 1}:`);
-            console.log(chunk.text);
-            console.log(`--- (${chunk.text.length} characters)`);
+            console.log(chunk);
         });
 
         console.log("\nTotal chunks after refinement:", refinedChunks.length);
