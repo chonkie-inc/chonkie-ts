@@ -79,7 +79,7 @@ export class CodeChunker extends BaseChunker {
     const {
       tokenizer = "Xenova/gpt2",
       chunkSize = 512,
-      lang = "typescript",
+      lang,
       includeNodes = false
     } = options;
 
