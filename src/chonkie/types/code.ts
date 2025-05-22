@@ -55,4 +55,4 @@ export class CodeChunk extends Chunk {
   public static fromDict(data: CodeChunkData): CodeChunk {
     return new CodeChunk(data);
   }
-} 
+}

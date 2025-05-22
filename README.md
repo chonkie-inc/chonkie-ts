@@ -87,6 +87,7 @@ More examples can be found in the [DOCS](./DOCS.md) or in the [examples](./examp
 | `TokenChunker` | Splits text into fixed-size token chunks |
 | `SentenceChunker` | Splits text into chunks based on sentences.  |
 | `RecursiveChunker` | Splits text hierarchically using customizable rules to create semantically meaningful chunks. |
+| `CodeChunker` | Splits code into structurally meaningful chunks. |
 
 ## Contributing
 
