@@ -243,18 +243,6 @@ describe('TokenChunker', () => {
     it('should have correct indices for complex markdown text', async () => {
         const chunker = await TokenChunker.create({tokenizer: defaultModel, chunkSize: 50, chunkOverlap: 5});
         const chunks = (await chunker.chunk(sampleComplexMarkdownText)) as Chunk[];
-        
-        // Debug: Print out the chunks and their indices
-        chunks.forEach((chunk, i) => {
-            const extractedText = sampleComplexMarkdownText.substring(chunk.startIndex, chunk.endIndex);
-            console.log(`\nChunk ${i}:`);
-            console.log('Start index:', chunk.startIndex);
-            console.log('End index:', chunk.endIndex);
-            console.log('Chunk text:', JSON.stringify(chunk.text));
-            console.log('Extracted text:', JSON.stringify(extractedText));
-            console.log('Are equal:', chunk.text === extractedText);
-        });
-        
         await verifyChunkIndices(chunks, sampleComplexMarkdownText);
     });
 

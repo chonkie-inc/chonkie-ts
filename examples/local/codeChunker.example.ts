@@ -1,6 +1,6 @@
 // Example of running Chonkie's CodeChunker class
 
-import { CodeChunker } from "../src/chonkie";
+import { CodeChunker } from "../../src/chonkie";
 
 async function main() {
     // Sample TypeScript code for testing

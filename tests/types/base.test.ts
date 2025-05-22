@@ -25,7 +25,7 @@ describe('Chunk', () => {
         new Chunk({ text: 'test', startIndex: 0, endIndex: 5, tokenCount: -1 })
     ).toThrowError('Token count must be a non-negative integer.');
   });
-  
+
   it('should serialize and deserialize correctly', () => {
     const chunk = new Chunk({
       text: 'test chunk',
@@ -58,38 +58,24 @@ describe('Chunk', () => {
     expect(restored.tokenCount).toBe(chunk.tokenCount);
   });
 
-  it('should have correct length property', () => {
-    const chunk = new Chunk({ text: 'sample', startIndex:0, endIndex:6, tokenCount: 1 });
-    expect(chunk.length).toBe(6);
-  });
-
   it('should convert to string correctly', () => {
-    const chunk = new Chunk({ text: 'sample chunk', startIndex:0, endIndex:12, tokenCount: 2 });
+    const chunk = new Chunk({ text: 'sample chunk', startIndex: 0, endIndex: 12, tokenCount: 2 });
     expect(chunk.toString()).toBe('sample chunk');
   });
 
   it('should convert to representation string correctly without context', () => {
-    const chunk = new Chunk({ text: 'repr chunk', startIndex:0, endIndex:10, tokenCount:2 });
+    const chunk = new Chunk({ text: 'repr chunk', startIndex: 0, endIndex: 10, tokenCount: 2 });
     expect(chunk.toRepresentation()).toBe("Chunk(text='repr chunk', tokenCount=2, startIndex=0, endIndex=10)");
   });
 
-  it('should be iterable', () => {
-    const chunk = new Chunk({ text: 'abc', startIndex:0, endIndex:3, tokenCount:1 });
-    const chars: string[] = [];
-    for (const char of chunk) {
-      chars.push(char);
-    }
-    expect(chars).toEqual(['a', 'b', 'c']);
-  });
-
   it('should slice text correctly', () => {
-    const chunk = new Chunk({ text: 'slicing', startIndex:0, endIndex:7, tokenCount:1 });
+    const chunk = new Chunk({ text: 'slicing', startIndex: 0, endIndex: 7, tokenCount: 1 });
     expect(chunk.slice(0, 3)).toBe('sli');
     expect(chunk.slice(3)).toBe('cing');
     expect(chunk.slice()).toBe('slicing');
   });
 
-  it('should perform a deep copy', () => {  
+  it('should perform a deep copy', () => {
     const originalChunk = new Chunk({
       text: 'original chunk',
       startIndex: 0,

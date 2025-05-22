@@ -47,7 +47,7 @@ export class CodeChunker extends BaseChunker {
   private constructor(
     tokenizer: Tokenizer,
     chunkSize: number,
-    lang?: string,
+    lang: string,
     includeNodes: boolean = false
   ) {
     super(tokenizer);
@@ -88,6 +88,10 @@ export class CodeChunker extends BaseChunker {
       tokenizerInstance = await Tokenizer.create(tokenizer);
     } else {
       tokenizerInstance = tokenizer;
+    }
+
+    if (!lang) {
+      throw new Error("Language must be specified for code chunking");
     }
 
     const plainInstance = new CodeChunker(
