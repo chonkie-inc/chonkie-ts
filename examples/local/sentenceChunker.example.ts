@@ -32,6 +32,7 @@ async function main() {
         console.log("Start Index:", chunk.startIndex);
         console.log("End Index:", chunk.endIndex);
         console.log("Text:", sampleText.slice(chunk.startIndex, chunk.endIndex));
+        console.log("Sentences: ", chunk.sentences);
         throw new Error("Chunk is not correct");
       }
     }
