@@ -1,6 +1,7 @@
 // Example of running Chonkie's sentence chunker classes
 
-import { SentenceChunker } from "../../src/chonkie";
+import { SentenceChunker } from "chonkie";
+import { SentenceChunk } from "chonkie/types";
 
 async function main() {
     // Sample text for testing

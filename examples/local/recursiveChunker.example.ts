@@ -1,6 +1,7 @@
 // Example of running Chonkie's recursive chunker classes
 
-import { RecursiveChunker, SentenceChunker } from "../../src/chonkie";
+import { RecursiveChunker } from "chonkie";
+import { RecursiveChunk } from "chonkie/types";
 
 async function main() {
 

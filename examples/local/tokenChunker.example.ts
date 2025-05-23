@@ -1,6 +1,7 @@
 // Example of running Chonkie's token chunker classes
 
-import { TokenChunker } from "../../src/chonkie";
+import { TokenChunker } from "chonkie";
+import { Chunk } from "chonkie/types";
 
 async function main() {
     // Sample text for testing
