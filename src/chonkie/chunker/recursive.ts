@@ -13,14 +13,12 @@ import { BaseChunker } from "./base";
  * @property {number} [chunkSize] - The maximum number of tokens per chunk. Must be greater than 0. Default: 512.
  * @property {RecursiveRules} [rules] - The rules that define how text should be recursively chunked. Default: new RecursiveRules().
  * @property {number} [minCharactersPerChunk] - The minimum number of characters that should be in each chunk. Must be greater than 0. Default: 24.
- * @property {"chunks" | "texts"} [returnType] - The type of output to return. "chunks" returns Chunk objects with metadata, "texts" returns plain strings. Default: "chunks".
  */
 export interface RecursiveChunkerOptions {
   tokenizer?: string | Tokenizer;
   chunkSize?: number;
   rules?: RecursiveRules;
   minCharactersPerChunk?: number;
-  returnType?: "chunks" | "texts";
 }
 
 /**
@@ -33,7 +31,6 @@ export interface RecursiveChunkerOptions {
  * @typedef {Object} CallableRecursiveChunker
  * @property {number} chunkSize - The maximum number of tokens per chunk.
  * @property {number} minCharactersPerChunk - The minimum number of characters per chunk.
- * @property {"chunks" | "texts"} returnType - The type of output to return ("chunks" for Chunk objects, "texts" for plain strings).
  * @property {RecursiveRules} rules - The rules that define how text should be recursively chunked.
  * @property {string} sep - The separator string used for internal splitting (usually "✄").
  * @property {Tokenizer} tokenizer - The tokenizer instance used for chunking operations (inherited from BaseChunker).
@@ -70,7 +67,6 @@ export type CallableRecursiveChunker = RecursiveChunker & {
  * @extends BaseChunker
  * @property {number} chunkSize - The maximum number of tokens per chunk.
  * @property {number} minCharactersPerChunk - The minimum number of characters per chunk.
- * @property {"chunks" | "texts"} returnType - The type of output to return ("chunks" for Chunk objects, "texts" for plain strings).
  * @property {RecursiveRules} rules - The rules that define how text should be recursively chunked.
  * @property {string} sep - The separator string used for internal splitting (usually "✄").
  * 
@@ -138,7 +134,7 @@ export class RecursiveChunker extends BaseChunker {
    *
    * @returns {Promise<CallableRecursiveChunker>} Promise resolving to a callable RecursiveChunker instance.
    *
-   * @throws {Error} If any option is invalid (e.g., chunkSize <= 0, invalid returnType, etc).
+   * @throws {Error} If any option is invalid (e.g., chunkSize <= 0).
    *
    * @see CallableRecursiveChunker for the callable interface and available properties/methods.
    *
@@ -147,7 +143,7 @@ export class RecursiveChunker extends BaseChunker {
    * const chunks = await chunker("Some text to chunk");
    *
    * @example <caption>Custom options and batch chunking</caption>
-   * const chunker = await RecursiveChunker.create({ chunkSize: 256, returnType: "texts" });
+   * const chunker = await RecursiveChunker.create({ chunkSize: 256 });
    * const batchChunks = await chunker(["Text 1", "Text 2"]);
    *
    * @example <caption>Accessing properties and methods</caption>
@@ -495,10 +491,10 @@ export class RecursiveChunker extends BaseChunker {
    * Recursively chunk text.
    * 
    * This method is the main entry point for chunking text using the RecursiveChunker.
-   * It takes a single text string and returns an array of chunks or strings depending on the returnType.
+   * It takes a single text string and returns an array of RecursiveChunk objects.
    * 
    * @param {string} text - The text to be chunked
-   * @returns {Promise<Chunk[]>} A promise that resolves to an array of Chunk objects
+   * @returns {Promise<RecursiveChunk[]>} A promise that resolves to an array of RecursiveChunk objects
    */
   public async chunk(text: string): Promise<RecursiveChunk[]> {
     const result = await this._recursiveChunk(text, 0, 0);

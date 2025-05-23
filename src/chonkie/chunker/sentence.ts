@@ -15,7 +15,6 @@ import { BaseChunker } from "./base";
  * @property {boolean} [approximate] - (Deprecated) Whether to use approximate token counting. Default: false. Will be removed in future versions.
  * @property {string[]} [delim] - List of sentence delimiters to use for splitting. Default: ['. ', '! ', '? ', '\n'].
  * @property {('prev' | 'next' | null)} [includeDelim] - Whether to include the delimiter with the previous sentence ('prev'), next sentence ('next'), or exclude it (null). Default: 'prev'.
- * @property {('chunks' | 'texts')} [returnType] - Return type: 'chunks' for Chunk objects, 'texts' for plain strings. Default: 'chunks'.
  */
 export interface SentenceChunkerOptions {
   tokenizer?: string | Tokenizer;
@@ -26,7 +25,6 @@ export interface SentenceChunkerOptions {
   approximate?: boolean;
   delim?: string[];
   includeDelim?: "prev" | "next" | null;
-  returnType?: "chunks" | "texts";
 }
 
 /**
@@ -308,7 +306,7 @@ export class SentenceChunker extends BaseChunker {
    * Create a chunk from a list of sentences.
    * 
    * @param {Sentence[]} sentences - The sentences to create a chunk from.
-   * @returns {Promise<Chunk>} A promise that resolves to a Chunk object.
+   * @returns {Promise<SentenceChunk>} A promise that resolves to a SentenceChunk object.
    */
   private async _createChunk(sentences: Sentence[]): Promise<SentenceChunk> {
     const chunkText = sentences.map(sentence => sentence.text).join("");
