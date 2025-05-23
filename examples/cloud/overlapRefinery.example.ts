@@ -1,5 +1,5 @@
 import { OverlapRefinery } from "chonkie/cloud";
-import { Chunk } from "chonkie";
+import { Chunk } from "chonkie/types";
 import { TokenChunker } from "chonkie";
 import * as dotenv from 'dotenv';
 

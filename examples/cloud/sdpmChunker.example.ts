@@ -1,4 +1,5 @@
 import { SDPMChunker } from "chonkie/cloud";
+import { SemanticChunk } from "chonkie/types";
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });

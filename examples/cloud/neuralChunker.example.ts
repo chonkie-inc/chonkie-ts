@@ -1,4 +1,5 @@
 import { NeuralChunker } from "chonkie/cloud";
+import { Chunk } from "chonkie/types";
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });

@@ -1,4 +1,5 @@
 import { SentenceChunker } from "chonkie/cloud";
+import { SentenceChunk } from "chonkie/types";
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });
