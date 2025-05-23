@@ -1,7 +1,6 @@
 /** Module containing RecursiveChunker class. */
 
 import { Tokenizer } from "../tokenizer";
-import { Chunk } from "../types/base";
 import { RecursiveChunk, RecursiveLevel, RecursiveRules } from "../types/recursive";
 import { BaseChunker } from "./base";
 
@@ -56,8 +55,8 @@ export interface RecursiveChunkerOptions {
  * const batchChunks = await chunker(["Text 1", "Text 2"]);
  */
 export type CallableRecursiveChunker = RecursiveChunker & {
-  (text: string, showProgress?: boolean): Promise<Chunk[] | string[]>;
-  (texts: string[], showProgress?: boolean): Promise<(Chunk[] | string[])[]>;
+  (text: string, showProgress?: boolean): Promise<RecursiveChunk[]>;
+  (texts: string[], showProgress?: boolean): Promise<(RecursiveChunk[])[]>;
 };
 
 
@@ -136,7 +135,6 @@ export class RecursiveChunker extends BaseChunker {
    *   @param {number} [options.chunkSize=512] - Maximum number of tokens per chunk. Must be > 0.
    *   @param {RecursiveRules} [options.rules=new RecursiveRules()] - Rules for recursive chunking. See {@link RecursiveRules} for customization.
    *   @param {number} [options.minCharactersPerChunk=24] - Minimum number of characters per chunk. Must be > 0.
-   *   @param {"chunks"|"texts"} [options.returnType="chunks"] - Output type: "chunks" for Chunk objects, "texts" for plain strings.
    *
    * @returns {Promise<CallableRecursiveChunker>} Promise resolving to a callable RecursiveChunker instance.
    *
@@ -172,7 +170,6 @@ export class RecursiveChunker extends BaseChunker {
       chunkSize = 512,
       rules = new RecursiveRules(),
       minCharactersPerChunk = 24,
-      returnType = "chunks"
     } = options;
 
     let tokenizerInstance: Tokenizer;
@@ -503,9 +500,9 @@ export class RecursiveChunker extends BaseChunker {
    * @param {string} text - The text to be chunked
    * @returns {Promise<Chunk[]>} A promise that resolves to an array of Chunk objects
    */
-  public async chunk(text: string): Promise<Chunk[]> {
+  public async chunk(text: string): Promise<RecursiveChunk[]> {
     const result = await this._recursiveChunk(text, 0, 0);
-    return result as Chunk[];
+    return result as RecursiveChunk[];
   }
 
   /**

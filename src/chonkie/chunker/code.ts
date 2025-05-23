@@ -5,7 +5,6 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { Tokenizer } from "../tokenizer";
-import { Chunk } from "../types/base";
 import { CodeChunk, TreeSitterNode } from "../types/code";
 import { BaseChunker } from "./base";
 
@@ -25,8 +24,8 @@ export interface CodeChunkerOptions {
  * in turn calls `chunk` or `chunkBatch`.
  */
 export type CallableCodeChunker = CodeChunker & {
-  (text: string, showProgress?: boolean): Promise<Chunk[]>;
-  (texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
+  (text: string, showProgress?: boolean): Promise<CodeChunk[]>;
+  (texts: string[], showProgress?: boolean): Promise<CodeChunk[][]>;
 };
 
 
@@ -102,7 +101,7 @@ export class CodeChunker extends BaseChunker {
     );
 
     // Create the callable function wrapper
-    const callableFn = function(
+    const callableFn = function (
       this: CallableCodeChunker,
       textOrTexts: string | string[],
       showProgress?: boolean
@@ -131,13 +130,13 @@ export class CodeChunker extends BaseChunker {
   private static findNearestNodeModules(startDir: string): string | null {
     let dir = path.resolve(startDir); // Ensure absolute path
     while (true) {
-        const candidate = path.join(dir, "node_modules");
-        if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
-            return candidate;
-        }
-        const parent = path.dirname(dir);
-        if (parent === dir) break; // Reached filesystem root
-        dir = parent;
+      const candidate = path.join(dir, "node_modules");
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+        return candidate;
+      }
+      const parent = path.dirname(dir);
+      if (parent === dir) break; // Reached filesystem root
+      dir = parent;
     }
     return null;
   }
@@ -384,7 +383,7 @@ export class CodeChunker extends BaseChunker {
   /**
    * Recursively chunks the code based on context from tree-sitter.
    */
-  public async chunk(text: string): Promise<Chunk[]> {
+  public async chunk(text: string): Promise<CodeChunk[]> {
     if (!text.trim()) {
       return [];
     }
@@ -430,6 +429,6 @@ export class CodeChunker extends BaseChunker {
       `lang=${this.lang}, ` +
       `includeNodes=${this.includeNodes})`;
   }
-} 
+}
 
 

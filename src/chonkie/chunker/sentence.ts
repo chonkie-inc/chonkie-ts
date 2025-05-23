@@ -1,7 +1,6 @@
 /** Module containing SentenceChunker class. */
 
 import { Tokenizer } from "../tokenizer";
-import { Chunk } from "../types/base";
 import { Sentence, SentenceChunk } from "../types/sentence";
 import { BaseChunker } from "./base";
 
@@ -46,13 +45,13 @@ export interface SentenceChunkerOptions {
  * const batchChunks = await chunker(["Text 1", "Text 2"]);
  * 
  * @type {SentenceChunker & {
- *   (text: string, showProgress?: boolean): Promise<Chunk[]>;
- *   (texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
+ *   (text: string, showProgress?: boolean): Promise<SentenceChunk[]>;
+ *   (texts: string[], showProgress?: boolean): Promise<SentenceChunk[][]>;
  * }}
  */
 export type CallableSentenceChunker = SentenceChunker & {
-  (text: string, showProgress?: boolean): Promise<Chunk[]>;
-  (texts: string[], showProgress?: boolean): Promise<Chunk[][]>;
+  (text: string, showProgress?: boolean): Promise<SentenceChunk[]>;
+  (texts: string[], showProgress?: boolean): Promise<SentenceChunk[][]>;
 };
 
 
@@ -69,7 +68,6 @@ export type CallableSentenceChunker = SentenceChunker & {
  * @property {boolean} approximate - Whether to use approximate token counting.
  * @property {string[]} delim - List of sentence delimiters to use for splitting.
  * @property {('prev' | 'next' | null)} includeDelim - Whether to include the delimiter with the previous sentence ('prev'), next sentence ('next'), or exclude it (null).
- * @property {('chunks')} returnType - Return type: 'chunks' for Chunk objects.
  * 
  * @method chunk - Chunk a single text string.
  * @method chunkBatch - Chunk an array of text strings.
@@ -312,7 +310,7 @@ export class SentenceChunker extends BaseChunker {
    * @param {Sentence[]} sentences - The sentences to create a chunk from.
    * @returns {Promise<Chunk>} A promise that resolves to a Chunk object.
    */
-  private async _createChunk(sentences: Sentence[]): Promise<Chunk> {
+  private async _createChunk(sentences: Sentence[]): Promise<SentenceChunk> {
     const chunkText = sentences.map(sentence => sentence.text).join("");
     // We calculate the token count here, as sum of the token counts of the sentences
     // does not match the token count of the chunk as a whole for some reason.
@@ -331,9 +329,9 @@ export class SentenceChunker extends BaseChunker {
    * Split text into overlapping chunks based on sentences while respecting token limits.
    * 
    * @param {string} text - The text to split into chunks.
-   * @returns {Promise<Chunk[]>} A promise that resolves to an array of Chunk objects.
+   * @returns {Promise<SentenceChunk[]>} A promise that resolves to an array of SentenceChunk objects.
    */
-  public async chunk(text: string): Promise<Chunk[]> {
+  public async chunk(text: string): Promise<SentenceChunk[]> {
     if (!text.trim()) {
       return [];
     }
@@ -353,7 +351,7 @@ export class SentenceChunker extends BaseChunker {
     }
     tokenSums.push(sum);
 
-    const chunks: Chunk[] = [];
+    const chunks: SentenceChunk[] = [];
     let pos = 0;
 
     while (pos < sentences.length) {
