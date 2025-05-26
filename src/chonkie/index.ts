@@ -4,4 +4,5 @@ export {
     RecursiveChunker,
     CodeChunker
 } from './chunker';
-export { Visualizer } from './utils/viz'; 
+export { Visualizer } from './utils/viz';
+export { ChromaHandshake } from './friends'; 
