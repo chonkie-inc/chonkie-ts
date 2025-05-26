@@ -28,10 +28,12 @@ In response to these limitations, semantic chunking has gained prominence as a m
     console.log(`Created ${chunks.length} chunks`);
 
     // Initialize ChromaHandshake with localhost:8000 path
+    // Default logLevel is 'verbose' - set to 'silent' to suppress logs
     const chromaHandshake = new ChromaHandshake(
         undefined, // client (will be created automatically)
         "rag_example_collection", // collection name
-        "http://localhost:8000" // path to Chroma instance
+        "http://localhost:8000", // path to Chroma instance
+        'verbose' // logLevel: 'verbose' or 'silent'
     );
 
     try {

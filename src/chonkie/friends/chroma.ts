@@ -11,23 +11,28 @@ import { v5 as uuidv5 } from "uuid";
  * 
  * @param client - The ChromaClient to use.
  * @param collectionName - The name of the collection to use.
- * @param path - The path to the Chroma database. Can point to the running instance, Docker or Cloud. 
+ * @param path - The path to the Chroma database. Can point to the running instance, Docker or Cloud.
+ * @param logLevel - The log level ('verbose' or 'silent'). Default: 'verbose'.
  */
 export class ChromaHandshake extends BaseHandshake {
 
   private client: ChromaClient;
   private collectionName: string;
+  private logLevel: 'verbose' | 'silent';
 
-  constructor(client?: ChromaClient, collectionName?: string, path?: string) {
+  constructor(client?: ChromaClient, collectionName?: string, path?: string, logLevel: 'verbose' | 'silent' = 'verbose') {
     super();
 
     // If the client is not provided, create a new one
     this.client = client ?? new ChromaClient({ path });
     // If the collection name is not provided, generate a random one
     this.collectionName = collectionName ?? generateRandomCollectionName();
+    this.logLevel = logLevel;
 
-    // Print to console the collection name
-    console.log(`Using collection ${this.collectionName}`);
+    // Print to console the collection name if verbose
+    if (this.logLevel === 'verbose') {
+      console.log(`Using collection ${this.collectionName}`);
+    }
   }
 
   private _getId(index: number, chunk: Chunk): string {
@@ -64,8 +69,10 @@ export class ChromaHandshake extends BaseHandshake {
       metadatas: metadatas,
     });
 
-    // Print to console the number of chunks upserted
-    console.log(`Upserted ${chunks.length} chunks into the collection ${this.collectionName}`);
+    // Print to console the number of chunks upserted if verbose
+    if (this.logLevel === 'verbose') {
+      console.log(`Upserted ${chunks.length} chunks into the collection ${this.collectionName}`);
+    }
   }
 
   /**
