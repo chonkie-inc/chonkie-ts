@@ -429,6 +429,49 @@ run();
 </details>
 
 <details>
+<summary><strong>Recipe Example: Using Hub Recipes for Hierarchical Chunking</strong></summary>
+
+```ts
+import { RecursiveChunker } from "chonkie";
+
+async function run() {
+  // Create a chunker using a recipe from the Chonkie hub
+  const chunker = await RecursiveChunker.fromRecipe({
+    name: 'default',
+    language: 'en',
+    chunkSize: 120,  // Override chunk size from recipe defaults
+    minCharactersPerChunk: 25
+  });
+  
+  // Display the recursive rules from the recipe
+  console.log(`Recipe loaded with ${chunker.rules.length} recursive levels:`);
+  for (let i = 0; i < chunker.rules.length; i++) {
+    const level = chunker.rules.getLevel(i);
+    console.log(`  Level ${i}: ${level?.toString()}`);
+  }
+  
+  const text = `Natural language processing is a fascinating field. It combines linguistics and computer science!
+  
+  What makes it particularly interesting? The ability to understand human language.
+  
+  Machine learning has revolutionized this domain. Deep learning models can now process text effectively.`;
+  
+  const chunks = await chunker(text);
+  
+  chunks.forEach((chunk, index) => {
+    if (typeof chunk === 'string') {
+      console.log(`Chunk ${index + 1}: ${chunk}`);
+    } else {
+      console.log(`Chunk ${index + 1} (Level ${chunk.level}): ${chunk.text} (${chunk.tokenCount} tokens)`);
+    }
+  });
+}
+
+run();
+```
+</details>
+
+<details>
 <summary><strong>Reconstructability Example: Ensure Chunks Can Be Rejoined</strong></summary>
 
 ```ts

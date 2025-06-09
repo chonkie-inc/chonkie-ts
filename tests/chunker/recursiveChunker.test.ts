@@ -119,5 +119,164 @@ describe('RecursiveChunker', () => {
     expect(chunks.length).toBeGreaterThan(0);
   });
 
-  // Remove fromRecipe tests as they are not implemented
+  describe('fromRecipe', () => {
+    it('should initialize correctly with default recipe', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({});
+      expect(chunker).toBeDefined();
+      expect(chunker.chunkSize).toBe(512); // default chunk size
+      expect(chunker.rules).toBeDefined();
+      expect(chunker.rules.length).toBeGreaterThan(0);
+      expect(chunker.minCharactersPerChunk).toBe(24); // default min characters
+    });
+
+    it('should initialize with custom recipe options', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: 256,
+        minCharactersPerChunk: 30
+      });
+      expect(chunker).toBeDefined();
+      expect(chunker.chunkSize).toBe(256);
+      expect(chunker.minCharactersPerChunk).toBe(30);
+      expect(chunker.rules).toBeDefined();
+      expect(chunker.rules.length).toBeGreaterThan(0);
+    });
+
+    it('should load recursive rules from recipe', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en'
+      });
+      
+      // Recipe should provide recursive rules - check that they exist and are reasonable
+      expect(chunker.rules).toBeDefined();
+      expect(chunker.rules.length).toBeGreaterThan(0);
+      
+      // Check that levels are properly configured
+      for (let i = 0; i < chunker.rules.length; i++) {
+        const level = chunker.rules.getLevel(i);
+        expect(level).toBeDefined();
+        expect(['prev', 'next']).toContain(level!.includeDelim);
+      }
+    });
+
+    it('should chunk text correctly with recipe configuration', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: 100
+      });
+      
+      const testText = `First paragraph with multiple sentences. Another sentence here.
+
+Second paragraph with different content! This should be split differently.
+
+Third paragraph for testing. Final sentence.`;
+      
+      const chunks = await chunker.chunk(testText) as RecursiveChunk[];
+      
+      expect(Array.isArray(chunks)).toBe(true);
+      expect(chunks.length).toBeGreaterThan(0);
+      
+      chunks.forEach(chunk => {
+        expect(chunk).toBeInstanceOf(RecursiveChunk);
+        expect(chunk.text).toBeDefined();
+        expect(chunk.startIndex).toBeGreaterThanOrEqual(0);
+        expect(chunk.endIndex).toBeGreaterThan(chunk.startIndex);
+        expect(chunk.tokenCount).toBeGreaterThan(0);
+        expect(chunk.level).toBeDefined();
+        expect(typeof chunk.level).toBe('number');
+      });
+    });
+
+    it('should respect chunk size from options over recipe defaults', async () => {
+      const customChunkSize = 75;
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: customChunkSize
+      });
+      
+      expect(chunker.chunkSize).toBe(customChunkSize);
+      
+      const chunks = await chunker.chunk(sampleText) as RecursiveChunk[];
+      chunks.forEach(chunk => {
+        expect(chunk.tokenCount).toBeLessThanOrEqual(customChunkSize + 10); // Allow some flexibility for recursive boundaries
+      });
+    });
+
+    it('should use recursive rules from recipe for hierarchical chunking', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: 50 // Small chunk size to force multiple levels
+      });
+      
+      const chunks = await chunker.chunk(sampleText) as RecursiveChunk[];
+      
+      // Should have chunks at different recursion levels
+      const levels = new Set(chunks.map(chunk => chunk.level));
+      expect(levels.size).toBeGreaterThan(1); // Should have multiple recursion levels
+      
+      // Check that levels are reasonable (not negative, within expected range)
+      chunks.forEach(chunk => {
+        expect(chunk.level).toBeGreaterThanOrEqual(0);
+        expect(chunk.level).toBeLessThan(chunker.rules.length);
+      });
+    });
+
+    it('should be callable as a function', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en'
+      });
+      
+      const testText = "Function call test with multiple sentences. Should work correctly with recursive rules.";
+      const chunks = await chunker(testText) as RecursiveChunk[];
+      
+      expect(Array.isArray(chunks)).toBe(true);
+      expect(chunks.length).toBeGreaterThan(0);
+      expect(chunks[0]).toBeInstanceOf(RecursiveChunk);
+    });
+
+    it('should handle batch processing', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en'
+      });
+      
+      const texts = [
+        "First batch text with sentences. Multiple paragraphs here.",
+        "Second batch text! Different structure and content for testing."
+      ];
+      
+      const batchChunks = await chunker(texts) as RecursiveChunk[][];
+      
+      expect(Array.isArray(batchChunks)).toBe(true);
+      expect(batchChunks.length).toBe(2);
+      
+      batchChunks.forEach(chunks => {
+        expect(Array.isArray(chunks)).toBe(true);
+        chunks.forEach(chunk => {
+          expect(chunk).toBeInstanceOf(RecursiveChunk);
+        });
+      });
+    });
+
+    it('should preserve text reconstruction with recipe rules', async () => {
+      const chunker = await RecursiveChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: 100
+      });
+      
+      const testText = "Text reconstruction test. Multiple sentences for testing. Should work correctly.";
+      const chunks = await chunker.chunk(testText) as RecursiveChunk[];
+      
+      // Reconstruct text from chunks
+      const reconstructedText = chunks.map(chunk => chunk.text).join('');
+      expect(normalizeText(reconstructedText)).toBe(normalizeText(testText));
+    });
+  });
 }); 
