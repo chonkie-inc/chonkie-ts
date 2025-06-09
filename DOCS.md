@@ -202,6 +202,16 @@ The `SentenceChunker` splits text into chunks based on sentences, with options f
   - Creates and initializes a SentenceChunker instance that is directly callable as a function.
   - Returns a callable chunker: `chunker(text: string | string[], showProgress?: boolean)`
 
+- **static async fromRecipe(options: SentenceChunkerRecipeOptions = {}): Promise<CallableSentenceChunker>**
+  - Creates and initializes a SentenceChunker instance from a recipe loaded from the Chonkie hub.
+  - The recipe's `delimiters` and `include_delim` settings override the default values.
+  - Returns a callable chunker: `chunker(text: string | string[], showProgress?: boolean)`
+  - Recipe options include:
+    - `name` (`string`, optional): Recipe name. Default: `"default"`.
+    - `language` (`string`, optional): Recipe language. Default: `"en"`.
+    - `filePath` (`string`, optional): Local recipe file path (alternative to name/language).
+    - All other options from `SentenceChunkerOptions` can be provided to override recipe defaults.
+
 - **chunk(text: string): Promise<Chunk[] | string[]>**
   - Splits a single text into sentence-based chunks, respecting token and sentence limits.
   - Returns an array of `Chunk` objects (with metadata) or strings, depending on `returnType`.
@@ -269,6 +279,42 @@ run();
 
 </details>
 
+<details>
+<summary><strong>Recipe Example: Using Hub Recipes for Chunking</strong></summary>
+
+```ts
+import { SentenceChunker } from "chonkie";
+
+async function run() {
+  // Create a chunker using a recipe from the Chonkie hub
+  const chunker = await SentenceChunker.fromRecipe({
+    name: 'default',
+    language: 'en',
+    chunkSize: 100,  // Override chunk size from recipe defaults
+    chunkOverlap: 15
+  });
+  
+  // The recipe will provide delimiters and delimiter inclusion mode
+  console.log("Recipe delimiters:", chunker.delim);
+  console.log("Include delimiter mode:", chunker.includeDelim);
+  
+  const text = "Natural language processing is fascinating! What makes it interesting? The ability to understand human language.";
+  const chunks = await chunker(text);
+  
+  chunks.forEach((chunk, index) => {
+    if (typeof chunk === 'string') {
+      console.log(`Chunk ${index + 1}: ${chunk}`);
+    } else {
+      console.log(`Chunk ${index + 1}: ${chunk.text} (${chunk.sentences.length} sentences)`);
+    }
+  });
+}
+
+run();
+```
+
+</details>
+
 **Notes:**
 
 - The chunker is directly callable as a function after creation: `const chunks = await chunker(text)` or `await chunker([text1, text2])`.
@@ -300,6 +346,16 @@ The `RecursiveChunker` splits text hierarchically using customizable rules to cr
 - **static async create(options: RecursiveChunkerOptions = {}): Promise<CallableRecursiveChunker>**
   - Creates and initializes a RecursiveChunker instance that is directly callable as a function.
   - Returns a callable chunker: `chunker(text: string | string[], showProgress?: boolean)`
+
+- **static async fromRecipe(options: RecursiveChunkerRecipeOptions = {}): Promise<CallableRecursiveChunker>**
+  - Creates and initializes a RecursiveChunker instance from a recipe loaded from the Chonkie hub.
+  - The recipe's `recursive_rules.levels` define the hierarchical chunking rules, overriding the default rules.
+  - Returns a callable chunker: `chunker(text: string | string[], showProgress?: boolean)`
+  - Recipe options include:
+    - `name` (`string`, optional): Recipe name. Default: `"default"`.
+    - `language` (`string`, optional): Recipe language. Default: `"en"`.
+    - `filePath` (`string`, optional): Local recipe file path (alternative to name/language).
+    - `tokenizer`, `chunkSize`, `minCharactersPerChunk` can be provided to override recipe defaults.
 
 - **chunk(text: string): Promise<Chunk[] | string[]>**
   - Recursively splits a single text into chunks or strings, according to the rules and parameters.
