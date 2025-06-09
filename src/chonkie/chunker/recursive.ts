@@ -3,6 +3,7 @@
 import { Tokenizer } from "../tokenizer";
 import { RecursiveChunk, RecursiveLevel, RecursiveRules } from "../types/recursive";
 import { BaseChunker } from "./base";
+import { Hubbie } from "../utils/hub";
 
 /**
  * Configuration options for creating a RecursiveChunker instance.
@@ -18,6 +19,27 @@ export interface RecursiveChunkerOptions {
   tokenizer?: string | Tokenizer;
   chunkSize?: number;
   rules?: RecursiveRules;
+  minCharactersPerChunk?: number;
+}
+
+/**
+ * Configuration options for creating a RecursiveChunker instance from a recipe.
+ * All options are optional and have sensible defaults.
+ * 
+ * @interface RecursiveChunkerRecipeOptions
+ * @property {string} [name] - The name of the recipe to get. Default: 'default'.
+ * @property {string} [language] - The language of the recipe to get. Default: 'en'.
+ * @property {string} [filePath] - Optionally, provide the path to the recipe file.
+ * @property {string | Tokenizer} [tokenizer] - The tokenizer to use for text processing. Can be a string identifier (default: "Xenova/gpt2") or a Tokenizer instance.
+ * @property {number} [chunkSize] - The maximum number of tokens per chunk. Must be greater than 0. Default: 512.
+ * @property {number} [minCharactersPerChunk] - The minimum number of characters that should be in each chunk. Must be greater than 0. Default: 24.
+ */
+export interface RecursiveChunkerRecipeOptions {
+  name?: string;
+  language?: string;
+  filePath?: string;
+  tokenizer?: string | Tokenizer;
+  chunkSize?: number;
   minCharactersPerChunk?: number;
 }
 
@@ -202,6 +224,67 @@ export class RecursiveChunker extends BaseChunker {
     Object.assign(callableFn, plainInstance);
 
     return callableFn as unknown as CallableRecursiveChunker;
+  }
+
+  /**
+   * Creates and initializes a RecursiveChunker instance from a recipe that is directly callable.
+   * 
+   * This method loads a recipe from the Chonkie hub and uses the recipe's recursive rules
+   * to configure the RecursiveChunker. The recipe rules override the default rules.
+   * 
+   * @param {RecursiveChunkerRecipeOptions} [options] - Options for configuring the RecursiveChunker with recipe settings.
+   * @returns {Promise<CallableRecursiveChunker>} A promise that resolves to a callable RecursiveChunker instance.
+   * 
+   * @example
+   * const chunker = await RecursiveChunker.fromRecipe({ name: 'default', language: 'en' });
+   * const chunks = await chunker("This is a sample text.");
+   * 
+   * @see RecursiveChunkerRecipeOptions
+   */
+  public static async fromRecipe(options: RecursiveChunkerRecipeOptions = {}): Promise<CallableRecursiveChunker> {
+    const {
+      name = 'default',
+      language = 'en',
+      filePath,
+      tokenizer = "Xenova/gpt2",
+      chunkSize = 512,
+      minCharactersPerChunk = 24
+    } = options;
+
+    // Load the recipe using Hubbie
+    const hubbie = new Hubbie();
+    const recipe = await hubbie.getRecipe(name, language, filePath);
+
+    // Extract recursive_rules from recipe and create RecursiveRules
+    let rules: RecursiveRules;
+    if (recipe.recipe?.recursive_rules?.levels) {
+      const levels = recipe.recipe.recursive_rules.levels.map((levelData: any) => {
+        // Map from recipe format to RecursiveLevel format
+        const levelConfig: any = {
+          whitespace: levelData.whitespace || false,
+          includeDelim: levelData.include_delim || 'prev'
+        };
+        
+        // Only add delimiters if they exist and are not null
+        if (levelData.delimiters != null) {
+          levelConfig.delimiters = levelData.delimiters;
+        }
+        
+        return new RecursiveLevel(levelConfig);
+      });
+      rules = new RecursiveRules({ levels: levels.map((level: RecursiveLevel) => level.toDict()) });
+    } else {
+      // Fallback to default rules if no recursive_rules in recipe
+      rules = new RecursiveRules();
+    }
+
+    // Create the RecursiveChunker using the regular create method with recipe values
+    return RecursiveChunker.create({
+      tokenizer,
+      chunkSize,
+      rules,
+      minCharactersPerChunk
+    });
   }
 
   /**
