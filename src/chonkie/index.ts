@@ -5,4 +5,5 @@ export {
     CodeChunker
 } from './chunker';
 export { Visualizer } from './utils/viz';
-export { ChromaHandshake } from './friends'; 
+export { ChromaHandshake } from './friends';
+export * from './types'; 
