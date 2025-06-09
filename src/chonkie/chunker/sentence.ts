@@ -3,6 +3,7 @@
 import { Tokenizer } from "../tokenizer";
 import { Sentence, SentenceChunk } from "../types/sentence";
 import { BaseChunker } from "./base";
+import { Hubbie } from "../utils/hub";
 
 /**
  * Options for creating a SentenceChunker instance.
@@ -25,6 +26,31 @@ export interface SentenceChunkerOptions {
   approximate?: boolean;
   delim?: string[];
   includeDelim?: "prev" | "next" | null;
+}
+
+/**
+ * Options for creating a SentenceChunker instance from a recipe.
+ *
+ * @property {string} [name] - The name of the recipe to get. Default: 'default'.
+ * @property {string} [language] - The language of the recipe to get. Default: 'en'.
+ * @property {string} [filePath] - Optionally, provide the path to the recipe file.
+ * @property {string | Tokenizer} [tokenizer] - The tokenizer to use for token counting. Can be a string (model name) or a Tokenizer instance. Default: 'Xenova/gpt2'.
+ * @property {number} [chunkSize] - Maximum number of tokens per chunk. Must be > 0. Default: 512.
+ * @property {number} [chunkOverlap] - Number of tokens to overlap between consecutive chunks. Must be >= 0 and < chunkSize. Default: 0.
+ * @property {number} [minSentencesPerChunk] - Minimum number of sentences per chunk. Must be > 0. Default: 1.
+ * @property {number} [minCharactersPerSentence] - Minimum number of characters for a valid sentence. Sentences shorter than this are merged. Must be > 0. Default: 12.
+ * @property {boolean} [approximate] - (Deprecated) Whether to use approximate token counting. Default: false. Will be removed in future versions.
+ */
+export interface SentenceChunkerRecipeOptions {
+  name?: string;
+  language?: string;
+  filePath?: string;
+  tokenizer?: string | Tokenizer;
+  chunkSize?: number;
+  chunkOverlap?: number;
+  minSentencesPerChunk?: number;
+  minCharactersPerSentence?: number;
+  approximate?: boolean;
 }
 
 /**
@@ -214,6 +240,60 @@ export class SentenceChunker extends BaseChunker {
     Object.assign(callableFn, plainInstance);
 
     return callableFn as unknown as CallableSentenceChunker;
+  }
+
+  /**
+   * Creates and initializes a SentenceChunker instance from a recipe that is directly callable.
+   * 
+   * This method loads a recipe from the Chonkie hub and uses the recipe's delimiters and settings
+   * to configure the SentenceChunker. The recipe delimiters override the default delimiters.
+   * 
+   * @param {SentenceChunkerRecipeOptions} [options] - Options for configuring the SentenceChunker with recipe settings.
+   * @returns {Promise<CallableSentenceChunker>} A promise that resolves to a callable SentenceChunker instance.
+   * 
+   * @example
+   * const chunker = await SentenceChunker.fromRecipe({ name: 'default', language: 'en' });
+   * const chunks = await chunker("This is a sample text.");
+   * 
+   * @see SentenceChunkerRecipeOptions
+   */
+  public static async fromRecipe(options: SentenceChunkerRecipeOptions = {}): Promise<CallableSentenceChunker> {
+    const {
+      name = 'default',
+      language = 'en',
+      filePath,
+      tokenizer = "Xenova/gpt2",
+      chunkSize = 512,
+      chunkOverlap = 0,
+      minSentencesPerChunk = 1,
+      minCharactersPerSentence = 12,
+      approximate = false
+    } = options;
+
+    // Load the recipe using Hubbie
+    const hubbie = new Hubbie();
+    const recipe = await hubbie.getRecipe(name, language, filePath);
+
+    // Extract delimiters and include_delim from recipe
+    const delim = recipe.recipe?.delimiters || [". ", "! ", "? ", "\n"];
+    const includeDelim = recipe.recipe?.include_delim || "prev";
+
+    // Validate includeDelim value
+    if (includeDelim !== "prev" && includeDelim !== "next" && includeDelim !== null) {
+      throw new Error(`Invalid include_delim value in recipe: ${includeDelim}. Must be 'prev', 'next' or null.`);
+    }
+
+    // Create the SentenceChunker using the regular create method with recipe values
+    return SentenceChunker.create({
+      tokenizer,
+      chunkSize,
+      chunkOverlap,
+      minSentencesPerChunk,
+      minCharactersPerSentence,
+      approximate,
+      delim,
+      includeDelim: includeDelim as "prev" | "next" | null
+    });
   }
   
 

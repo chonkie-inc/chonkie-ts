@@ -106,5 +106,121 @@ describe('SentenceChunker', () => {
     });
   });
 
-  // Remove fromRecipe tests as they are not implemented
+  describe('fromRecipe', () => {
+    it('should initialize correctly with default recipe', async () => {
+      const chunker = await SentenceChunker.fromRecipe({});
+      expect(chunker).toBeDefined();
+      expect(chunker.chunkSize).toBe(512); // default chunk size
+      expect(chunker.delim).toBeDefined();
+      expect(Array.isArray(chunker.delim)).toBe(true);
+      expect(chunker.includeDelim).toBeDefined();
+    });
+
+    it('should initialize with custom recipe options', async () => {
+      const chunker = await SentenceChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: 256,
+        chunkOverlap: 20
+      });
+      expect(chunker).toBeDefined();
+      expect(chunker.chunkSize).toBe(256);
+      expect(chunker.chunkOverlap).toBe(20);
+      expect(chunker.delim).toBeDefined();
+      expect(chunker.includeDelim).toBeDefined();
+    });
+
+    it('should load delimiters from recipe', async () => {
+      const chunker = await SentenceChunker.fromRecipe({
+        name: 'default',
+        language: 'en'
+      });
+      
+      // Recipe should provide delimiters - check that they exist and are reasonable
+      expect(chunker.delim).toBeDefined();
+      expect(Array.isArray(chunker.delim)).toBe(true);
+      expect(chunker.delim.length).toBeGreaterThan(0);
+      
+      // Check include delimiter setting from recipe
+      expect(['prev', 'next', null]).toContain(chunker.includeDelim);
+    });
+
+    it('should chunk text correctly with recipe configuration', async () => {
+      const chunker = await SentenceChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: 100
+      });
+      
+      const testText = "This is a test sentence. Another test sentence! A question sentence? Final sentence.";
+      const chunks = await chunker.chunk(testText) as SentenceChunk[];
+      
+      expect(Array.isArray(chunks)).toBe(true);
+      expect(chunks.length).toBeGreaterThan(0);
+      
+      chunks.forEach(chunk => {
+        expect(chunk).toBeInstanceOf(SentenceChunk);
+        expect(chunk.text).toBeDefined();
+        expect(chunk.startIndex).toBeGreaterThanOrEqual(0);
+        expect(chunk.endIndex).toBeGreaterThan(chunk.startIndex);
+        expect(chunk.tokenCount).toBeGreaterThan(0);
+        expect(chunk.sentences).toBeDefined();
+        expect(Array.isArray(chunk.sentences)).toBe(true);
+      });
+    });
+
+    it('should respect chunk size from options over recipe defaults', async () => {
+      const customChunkSize = 75;
+      const chunker = await SentenceChunker.fromRecipe({
+        name: 'default',
+        language: 'en',
+        chunkSize: customChunkSize
+      });
+      
+      expect(chunker.chunkSize).toBe(customChunkSize);
+      
+      const chunks = await chunker.chunk(sampleText) as SentenceChunk[];
+      chunks.forEach(chunk => {
+        expect(chunk.tokenCount).toBeLessThanOrEqual(customChunkSize + 20); // Allow flexibility for sentence boundaries
+      });
+    });
+
+    it('should be callable as a function', async () => {
+      const chunker = await SentenceChunker.fromRecipe({
+        name: 'default',
+        language: 'en'
+      });
+      
+      const testText = "Function call test. Should work correctly.";
+      const chunks = await chunker(testText) as SentenceChunk[];
+      
+      expect(Array.isArray(chunks)).toBe(true);
+      expect(chunks.length).toBeGreaterThan(0);
+      expect(chunks[0]).toBeInstanceOf(SentenceChunk);
+    });
+
+    it('should handle batch processing', async () => {
+      const chunker = await SentenceChunker.fromRecipe({
+        name: 'default',
+        language: 'en'
+      });
+      
+      const texts = [
+        "First batch text. With sentences.",
+        "Second batch text! Another sentence?"
+      ];
+      
+      const batchChunks = await chunker(texts) as SentenceChunk[][];
+      
+      expect(Array.isArray(batchChunks)).toBe(true);
+      expect(batchChunks.length).toBe(2);
+      
+      batchChunks.forEach(chunks => {
+        expect(Array.isArray(chunks)).toBe(true);
+        chunks.forEach(chunk => {
+          expect(chunk).toBeInstanceOf(SentenceChunk);
+        });
+      });
+    });
+  });
 }); 
