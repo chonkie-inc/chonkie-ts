@@ -9,7 +9,7 @@
  * 6. Tokens (fallback)
  */
 
-import { RecursiveChunker, RecursiveRules, RecursiveLevel } from "../../src/chonkie";
+import { RecursiveChunker, RecursiveRules, RecursiveLevel } from "chonkie";
 
 async function main() {
     console.log("=== RecursiveChunker Custom Rules Example ===\n");
