@@ -26,7 +26,7 @@ async function main() {
         console.log("Creating SentenceChunker from default recipe...");
         const chunker = await SentenceChunker.fromRecipe({
             name: 'default',
-            lang: 'en',
+            language: 'en',
             chunkSize: 100,  // Override chunk size
             chunkOverlap: 10
         });
@@ -60,7 +60,7 @@ async function main() {
         
         const customChunker = await SentenceChunker.fromRecipe({
             name: 'default',
-            lang: 'en',
+            language: 'en',
             chunkSize: 50,
             minSentencesPerChunk: 2,
             minCharactersPerSentence: 20

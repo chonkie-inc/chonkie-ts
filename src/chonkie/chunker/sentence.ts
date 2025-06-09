@@ -32,7 +32,7 @@ export interface SentenceChunkerOptions {
  * Options for creating a SentenceChunker instance from a recipe.
  *
  * @property {string} [name] - The name of the recipe to get. Default: 'default'.
- * @property {string} [lang] - The language of the recipe to get. Default: 'en'.
+ * @property {string} [language] - The language of the recipe to get. Default: 'en'.
  * @property {string} [filePath] - Optionally, provide the path to the recipe file.
  * @property {string | Tokenizer} [tokenizer] - The tokenizer to use for token counting. Can be a string (model name) or a Tokenizer instance. Default: 'Xenova/gpt2'.
  * @property {number} [chunkSize] - Maximum number of tokens per chunk. Must be > 0. Default: 512.
@@ -43,7 +43,7 @@ export interface SentenceChunkerOptions {
  */
 export interface SentenceChunkerRecipeOptions {
   name?: string;
-  lang?: string;
+  language?: string;
   filePath?: string;
   tokenizer?: string | Tokenizer;
   chunkSize?: number;
@@ -252,7 +252,7 @@ export class SentenceChunker extends BaseChunker {
    * @returns {Promise<CallableSentenceChunker>} A promise that resolves to a callable SentenceChunker instance.
    * 
    * @example
-   * const chunker = await SentenceChunker.fromRecipe({ name: 'default', lang: 'en' });
+   * const chunker = await SentenceChunker.fromRecipe({ name: 'default', language: 'en' });
    * const chunks = await chunker("This is a sample text.");
    * 
    * @see SentenceChunkerRecipeOptions
@@ -260,7 +260,7 @@ export class SentenceChunker extends BaseChunker {
   public static async fromRecipe(options: SentenceChunkerRecipeOptions = {}): Promise<CallableSentenceChunker> {
     const {
       name = 'default',
-      lang = 'en',
+      language = 'en',
       filePath,
       tokenizer = "Xenova/gpt2",
       chunkSize = 512,
@@ -272,7 +272,7 @@ export class SentenceChunker extends BaseChunker {
 
     // Load the recipe using Hubbie
     const hubbie = new Hubbie();
-    const recipe = await hubbie.getRecipe(name, lang, filePath);
+    const recipe = await hubbie.getRecipe(name, language, filePath);
 
     // Extract delimiters and include_delim from recipe
     const delim = recipe.recipe?.delimiters || [". ", "! ", "? ", "\n"];
