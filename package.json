@@ -11,20 +11,21 @@
   "bugs": {
     "url": "https://github.com/chonkie-inc/chonkie-ts/issues"
   },
+  "type": "module",
   "main": "dist/chonkie/index.js",
   "types": "dist/chonkie/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/chonkie/index.d.ts",
-      "default": "./dist/chonkie/index.js"
+      "import": "./dist/chonkie/index.js"
     },
     "./cloud": {
       "types": "./dist/chonkie/cloud/index.d.ts",
-      "default": "./dist/chonkie/cloud/index.js"
+      "import": "./dist/chonkie/cloud/index.js"
     },
     "./types": {
       "types": "./dist/chonkie/types/index.d.ts",
-      "default": "./dist/chonkie/types/index.js"
+      "import": "./dist/chonkie/types/index.js"
     }
   },
   "scripts": {
@@ -56,6 +57,7 @@
   "dependencies": {
     "@huggingface/hub": "^2.0.1",
     "@huggingface/transformers": "^3.5.1",
+    "chonkie": "^0.2.6",
     "jsonschema": "^1.5.0"
   },
   "optionalDependencies": {
