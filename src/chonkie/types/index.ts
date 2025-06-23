@@ -1,6 +1,6 @@
-export * from './base';
-export * from './sentence';
-export * from './code';
-export * from './recursive';
-export * from './late'; 
-export * from './semantic';
+export { Chunk } from './base';
+export { SentenceData, Sentence, SentenceChunk } from './sentence';
+export { TreeSitterNode, CodeChunk } from './code';
+export { RecursiveLevel, RecursiveRules, RecursiveChunk } from './recursive';
+export { LateChunk } from './late'; 
+export { SemanticSentenceData, SemanticSentence, SemanticChunkData, SemanticChunk } from './semantic';
