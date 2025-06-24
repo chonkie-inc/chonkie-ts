@@ -1,6 +1,7 @@
 // Example of running Chonkie's recursive chunker classes
 
-import { RecursiveChunker } from "chonkie";
+// Using selective import for better tree-shaking (avoids loading web-tree-sitter)
+import { RecursiveChunker } from "chonkie/chunker/recursive";
 import { RecursiveChunk } from "chonkie/types";
 
 async function main() {

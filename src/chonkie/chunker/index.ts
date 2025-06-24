@@ -1,5 +1,5 @@
-export * from './base';
-export * from './code';
-export * from './recursive';
-export * from './sentence';
-export * from './token'; 
+export { BaseChunker } from './base';
+export { CodeChunker, CallableCodeChunker, CodeChunkerOptions } from './code';
+export { RecursiveChunker, CallableRecursiveChunker, RecursiveChunkerOptions, RecursiveChunkerRecipeOptions } from './recursive';
+export { SentenceChunker, CallableSentenceChunker, SentenceChunkerOptions, SentenceChunkerRecipeOptions } from './sentence';
+export { TokenChunker, CallableTokenChunker, TokenChunkerOptions } from './token'; 

@@ -3,7 +3,8 @@
  * a chunker instance using delimiters and settings from a recipe loaded from the hub.
  */
 
-import { SentenceChunker } from "../../src/chonkie";
+// Using selective import for better tree-shaking (avoids loading web-tree-sitter)
+import { SentenceChunker } from "chonkie/chunker/sentence";
 
 async function main() {
     console.log("=== SentenceChunker fromRecipe Example ===\n");

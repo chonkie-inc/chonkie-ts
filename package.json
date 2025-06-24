@@ -1,6 +1,6 @@
 {
   "name": "chonkie",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library.",
   "license": "MIT",
   "homepage": "https://docs.chonkie.ai",
@@ -11,20 +11,41 @@
   "bugs": {
     "url": "https://github.com/chonkie-inc/chonkie-ts/issues"
   },
+  "type": "module",
   "main": "dist/chonkie/index.js",
   "types": "dist/chonkie/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/chonkie/index.d.ts",
-      "default": "./dist/chonkie/index.js"
+      "import": "./dist/chonkie/index.js"
     },
     "./cloud": {
       "types": "./dist/chonkie/cloud/index.d.ts",
-      "default": "./dist/chonkie/cloud/index.js"
+      "import": "./dist/chonkie/cloud/index.js"
     },
     "./types": {
       "types": "./dist/chonkie/types/index.d.ts",
-      "default": "./dist/chonkie/types/index.js"
+      "import": "./dist/chonkie/types/index.js"
+    },
+    "./chunker/token": {
+      "types": "./dist/chonkie/chunker/token.d.ts",
+      "import": "./dist/chonkie/chunker/token.js"
+    },
+    "./chunker/sentence": {
+      "types": "./dist/chonkie/chunker/sentence.d.ts",
+      "import": "./dist/chonkie/chunker/sentence.js"
+    },
+    "./chunker/recursive": {
+      "types": "./dist/chonkie/chunker/recursive.d.ts",
+      "import": "./dist/chonkie/chunker/recursive.js"
+    },
+    "./chunker/code": {
+      "types": "./dist/chonkie/chunker/code.d.ts",
+      "import": "./dist/chonkie/chunker/code.js"
+    },
+    "./friends": {
+      "types": "./dist/chonkie/friends/index.d.ts",
+      "import": "./dist/chonkie/friends/index.js"
     }
   },
   "scripts": {
@@ -56,6 +77,7 @@
   "dependencies": {
     "@huggingface/hub": "^2.0.1",
     "@huggingface/transformers": "^3.5.1",
+    "chonkie": "^0.2.6",
     "jsonschema": "^1.5.0"
   },
   "optionalDependencies": {
