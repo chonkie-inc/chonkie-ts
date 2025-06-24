@@ -1,6 +1,7 @@
 // Example of running Chonkie's token chunker classes
 
-import { TokenChunker } from "chonkie";
+// Using selective import for better tree-shaking (avoids loading web-tree-sitter)
+import { TokenChunker } from "chonkie/chunker/token";
 import { Chunk } from "chonkie/types";
 
 async function main() {

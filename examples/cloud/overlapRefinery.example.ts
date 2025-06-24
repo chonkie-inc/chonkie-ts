@@ -1,6 +1,7 @@
+// Using selective imports for better tree-shaking and consistency
 import { OverlapRefinery } from "chonkie/cloud";
+import { TokenChunker } from "chonkie/chunker/token";
 import { Chunk } from "chonkie/types";
-import { TokenChunker } from "chonkie";
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });

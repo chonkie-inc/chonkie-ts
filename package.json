@@ -1,6 +1,6 @@
 {
   "name": "chonkie",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library.",
   "license": "MIT",
   "homepage": "https://docs.chonkie.ai",
@@ -26,6 +26,26 @@
     "./types": {
       "types": "./dist/chonkie/types/index.d.ts",
       "import": "./dist/chonkie/types/index.js"
+    },
+    "./chunker/token": {
+      "types": "./dist/chonkie/chunker/token.d.ts",
+      "import": "./dist/chonkie/chunker/token.js"
+    },
+    "./chunker/sentence": {
+      "types": "./dist/chonkie/chunker/sentence.d.ts",
+      "import": "./dist/chonkie/chunker/sentence.js"
+    },
+    "./chunker/recursive": {
+      "types": "./dist/chonkie/chunker/recursive.d.ts",
+      "import": "./dist/chonkie/chunker/recursive.js"
+    },
+    "./chunker/code": {
+      "types": "./dist/chonkie/chunker/code.d.ts",
+      "import": "./dist/chonkie/chunker/code.js"
+    },
+    "./friends": {
+      "types": "./dist/chonkie/friends/index.d.ts",
+      "import": "./dist/chonkie/friends/index.js"
     }
   },
   "scripts": {

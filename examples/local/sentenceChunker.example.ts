@@ -1,6 +1,7 @@
 // Example of running Chonkie's sentence chunker classes
 
-import { SentenceChunker } from "chonkie";
+// Using selective import for better tree-shaking (avoids loading web-tree-sitter)
+import { SentenceChunker } from "chonkie/chunker/sentence";
 import { SentenceChunk } from "chonkie/types";
 
 async function main() {

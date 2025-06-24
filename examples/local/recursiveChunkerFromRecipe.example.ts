@@ -3,7 +3,8 @@
  * a chunker instance using recursive rules from a recipe loaded from the hub.
  */
 
-import { RecursiveChunker } from "../../src/chonkie";
+// Using selective import for better tree-shaking (avoids loading web-tree-sitter)
+import { RecursiveChunker } from "chonkie/chunker/recursive";
 
 async function main() {
     console.log("=== RecursiveChunker fromRecipe Example ===\n");

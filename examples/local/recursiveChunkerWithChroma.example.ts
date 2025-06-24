@@ -1,6 +1,8 @@
 // Example of using RecursiveChunker with ChromaHandshake for vector storage
 
-import { RecursiveChunker, ChromaHandshake } from "chonkie";
+// Using selective imports for better tree-shaking (avoids loading web-tree-sitter and other deps)
+import { RecursiveChunker } from "chonkie/chunker/recursive";
+import { ChromaHandshake } from "chonkie/friends";
 
 async function main() {
     // Sample text for testing

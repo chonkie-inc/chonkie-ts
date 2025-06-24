@@ -1,6 +1,6 @@
 // Example of running Chonkie's tokenizer classes
 
-import { Tokenizer } from "../../src/chonkie/tokenizer";
+import { Tokenizer } from "chonkie";
 
 async function main() {
     // Firstly, let's define some text to chunk

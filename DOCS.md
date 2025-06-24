@@ -48,7 +48,8 @@ npm i chonkie
 Here's how easy it is to use any chunker in `chonkie-ts`! All chunkers follow the same simple pattern: import, create, and call on your text. Below is an example using the `RecursiveChunker`:
 
 ```ts
-import { RecursiveChunker } from "chonkie-ts";
+// Using selective import for better tree-shaking
+import { RecursiveChunker } from "chonkie/chunker/recursive";
 
 // Create a chunker instance (async)
 const chunker = await RecursiveChunker.create({ chunkSize: 256 });
@@ -78,6 +79,7 @@ Here's an overview of the chunkers that are currently implemented in `chonkie-ts
 | `TokenChunker` | Splits text into fixed-size token chunks |
 | `SentenceChunker` | Splits text into chunks based on sentences.  |
 | `RecursiveChunker` | Splits text hierarchically using customizable rules to create semantically meaningful chunks. |
+| `CodeChunker` | Splits source code into meaningful segments using AST parsing (requires selective import). |
 
 ### TokenChunker
 
@@ -117,7 +119,8 @@ The `TokenChunker` splits text into fixed-size, optionally overlapping chunks ba
 <summary><strong>Basic Example: Chunk a Simple String</strong></summary>
 
 ```ts
-import { TokenChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { TokenChunker } from "chonkie/chunker/token";
 
 async function run() {
   const chunker = await TokenChunker.create({ chunkSize: 5, chunkOverlap: 2 });
@@ -134,7 +137,8 @@ run();
 <summary><strong>Advanced Example: Batch Chunking and Metadata</strong></summary>
 
 ```ts
-import { TokenChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { TokenChunker } from "chonkie/chunker/token";
 
 async function run() {
   const chunker = await TokenChunker.create({
@@ -229,7 +233,8 @@ The `SentenceChunker` splits text into chunks based on sentences, with options f
 <summary><strong>Basic Example: Chunk a Simple String</strong></summary>
 
 ```ts
-import { SentenceChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { SentenceChunker } from "chonkie/chunker/sentence";
 
 async function run() {
   const chunker = await SentenceChunker.create({ chunkSize: 128, minSentencesPerChunk: 2 });
@@ -247,7 +252,8 @@ run();
 <summary><strong>Advanced Example: Batch Chunking and Metadata</strong></summary>
 
 ```ts
-import { SentenceChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { SentenceChunker } from "chonkie/chunker/sentence";
 
 async function run() {
   const chunker = await SentenceChunker.create({
@@ -283,7 +289,8 @@ run();
 <summary><strong>Recipe Example: Using Hub Recipes for Chunking</strong></summary>
 
 ```ts
-import { SentenceChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { SentenceChunker } from "chonkie/chunker/sentence";
 
 async function run() {
   // Create a chunker using a recipe from the Chonkie hub
@@ -374,7 +381,8 @@ The `RecursiveChunker` splits text hierarchically using customizable rules to cr
 <summary><strong>Basic Example: Chunk a Simple String</strong></summary>
 
 ```ts
-import { RecursiveChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { RecursiveChunker } from "chonkie/chunker/recursive";
 
 async function run() {
   const chunker = await RecursiveChunker.create({ chunkSize: 128 });
@@ -391,7 +399,9 @@ run();
 <summary><strong>Advanced Example: Custom Rules and Batch Chunking</strong></summary>
 
 ```ts
-import { RecursiveChunker, RecursiveRules } from "chonkie";
+// Using selective imports for better tree-shaking
+import { RecursiveChunker } from "chonkie/chunker/recursive";
+import { RecursiveRules } from "chonkie/types";
 
 async function run() {
   // Custom rules: first split by paragraphs, then by sentences, then by tokens
@@ -432,7 +442,8 @@ run();
 <summary><strong>Recipe Example: Using Hub Recipes for Hierarchical Chunking</strong></summary>
 
 ```ts
-import { RecursiveChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { RecursiveChunker } from "chonkie/chunker/recursive";
 
 async function run() {
   // Create a chunker using a recipe from the Chonkie hub
@@ -475,7 +486,8 @@ run();
 <summary><strong>Reconstructability Example: Ensure Chunks Can Be Rejoined</strong></summary>
 
 ```ts
-import { RecursiveChunker } from "chonkie";
+// Using selective import for better tree-shaking
+import { RecursiveChunker } from "chonkie/chunker/recursive";
 
 async function run() {
   const sampleText = "Your long document here...";
@@ -500,6 +512,14 @@ run();
 - The `chunkBatch` method (or calling with an array) allows efficient batch processing with optional progress reporting.
 
 ### CodeChunker
+
+> **⚠️ Important**: Starting from v0.3.0, CodeChunker requires a selective import to avoid bundler issues with the `web-tree-sitter` dependency.
+> 
+> ```typescript
+> // ✅ Correct way to import CodeChunker in v0.3.0+
+> import { CodeChunker } from "chonkie/chunker/code";
+> import { CodeChunk } from "chonkie/types";
+> ```
 
 The `CodeChunker` intelligently splits source code into meaningful segments using Abstract Syntax Trees (ASTs) generated by Tree-sitter. It aims to create chunks that respect code structure (like functions, classes, blocks) while attempting to stay within a specified token `chunkSize`. This chunker is particularly useful for processing code for Large Language Models (LLMs), static analysis, or Retrieval Augmented Generation (RAG) systems that need to understand or embed code semantically.
 
@@ -532,7 +552,8 @@ The `CodeChunker` intelligently splits source code into meaningful segments usin
 <summary><strong>Basic Example: Chunking JavaScript Code</strong></summary>
 
 ```ts
-import { CodeChunker } from "chonkie"; // Ensure CodeChunker is exported
+// Using selective import to avoid web-tree-sitter bundler issues
+import { CodeChunker } from "chonkie/chunker/code";
 
 async function run() {
   const chunker = await CodeChunker.create({
@@ -578,7 +599,9 @@ run();
 <summary><strong>Advanced Example: Batch Chunking with AST Nodes</strong></summary>
 
 ```ts
-import { CodeChunker, CodeChunk } from "chonkie"; // Assuming CodeChunk is exported
+// Using selective imports for better tree-shaking (avoids loading web-tree-sitter)
+import { CodeChunker } from "chonkie/chunker/code";
+import { CodeChunk } from "chonkie/types";
 
 async function run() {
   const chunker = await CodeChunker.create({
@@ -807,7 +830,8 @@ interface SentenceData {
 **Example:**
 
 ```ts
-import { Sentence } from "chonkie";
+// Using selective import for better tree-shaking
+import { Sentence } from "chonkie/types";
 const sentence = new Sentence({ text: "This is a sentence.", startIndex: 0, endIndex: 21, tokenCount: 4 });
 console.log(sentence.toString()); // "This is a sentence."
 ```
@@ -851,7 +875,8 @@ class SentenceChunk extends Chunk {
 **Example:**
 
 ```ts
-import { SentenceChunk, Sentence } from "chonkie";
+// Using selective imports for better tree-shaking
+import { SentenceChunk, Sentence } from "chonkie/types";
 
 const sentence1 = new Sentence({
   text: "First sentence.",
@@ -919,7 +944,8 @@ class RecursiveRules {
 **Example:**
 
 ```ts
-import { RecursiveRules } from "chonkie";
+// Using selective import for better tree-shaking
+import { RecursiveRules } from "chonkie/types";
 const rules = new RecursiveRules({
   levels: [
     { delimiters: ["\n\n"], includeDelim: "prev" },
@@ -966,7 +992,8 @@ class RecursiveLevel {
 **Example:**
 
 ```ts
-import { RecursiveLevel } from "chonkie";
+// Using selective import for better tree-shaking
+import { RecursiveLevel } from "chonkie/types";
 const level = new RecursiveLevel({ delimiters: [". ", "! "], includeDelim: "prev" });
 ```
 
@@ -1021,7 +1048,8 @@ interface RecursiveChunkData {
 **Example:**
 
 ```ts
-import { RecursiveChunk } from "chonkie";
+// Using selective import for better tree-shaking
+import { RecursiveChunk } from "chonkie/types";
 
 const chunk = new RecursiveChunk({
   text: "This is a recursively chunked text.",

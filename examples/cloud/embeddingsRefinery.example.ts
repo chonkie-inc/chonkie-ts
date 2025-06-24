@@ -1,4 +1,6 @@
-import { Chunk, TokenChunker } from "chonkie";
+// Using selective imports for better tree-shaking and consistency
+import { TokenChunker } from "chonkie/chunker/token";
+import { Chunk } from "chonkie/types";
 import { EmbeddingsRefinery } from "chonkie/cloud";
 import * as dotenv from 'dotenv';
 

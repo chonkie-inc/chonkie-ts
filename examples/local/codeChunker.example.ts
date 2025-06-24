@@ -1,6 +1,7 @@
 // Example of running Chonkie's CodeChunker class
 
-import { CodeChunker } from "chonkie";
+// CodeChunker requires web-tree-sitter, so using selective import here too
+import { CodeChunker } from "chonkie/chunker/code";
 import { CodeChunk } from "chonkie/types";
 
 async function main() {
