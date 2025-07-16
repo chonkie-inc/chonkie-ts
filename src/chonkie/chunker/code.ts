@@ -155,23 +155,35 @@ export class CodeChunker extends BaseChunker {
     // Convert language name to lowercase and replace hyphens with underscores
     const formattedLang = lang.toLowerCase().replace(/-/g, '_');
 
-    // Find node_modules starting from the current file's directory and searching upwards
-    const nodeModulesPath = CodeChunker.findNearestNodeModules(__dirname);
-
-    if (!nodeModulesPath) {
-      throw new Error(
-        "node_modules directory not found. " +
-        "This is required for loading tree-sitter language WASM files from 'tree-sitter-wasms' package."
+    // Resolve the WASM file using Node's module resolution. This allows the
+    // consumer to place `tree-sitter-wasms` anywhere in their node_modules
+    // hierarchy (e.g., monorepos).
+    let wasmPath: string;
+    try {
+      wasmPath = require.resolve(
+        `tree-sitter-wasms/out/tree-sitter-${formattedLang}.wasm`,
+        { paths: [__dirname] }
       );
-    }
-
-    const wasmPath = path.join(nodeModulesPath, `tree-sitter-wasms/out/tree-sitter-${formattedLang}.wasm`);
-
-    if (!fs.existsSync(wasmPath)) {
-      throw new Error(
-        `Tree-sitter WASM file for language "${formattedLang}" not found at ${wasmPath}. ` +
-        `Ensure 'tree-sitter-wasms' package is installed and the language is supported.`
+    } catch {
+      // Fallback to manual node_modules search for environments where
+      // `require.resolve` fails to locate the package.
+      const nodeModulesPath = CodeChunker.findNearestNodeModules(__dirname);
+      if (!nodeModulesPath) {
+        throw new Error(
+          "tree-sitter-wasms package not found. " +
+          "This is required for loading tree-sitter language WASM files."
+        );
+      }
+      wasmPath = path.join(
+        nodeModulesPath,
+        `tree-sitter-wasms/out/tree-sitter-${formattedLang}.wasm`
       );
+      if (!fs.existsSync(wasmPath)) {
+        throw new Error(
+          `Tree-sitter WASM file for language "${formattedLang}" not found at ${wasmPath}. ` +
+          `Ensure 'tree-sitter-wasms' package is installed and the language is supported.`
+        );
+      }
     }
 
     try {
