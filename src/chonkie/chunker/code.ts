@@ -140,6 +140,16 @@ export class CodeChunker extends BaseChunker {
   }
 
   /**
+   * Wrapper around require.resolve to make it mockable in tests.
+   * @param modulePath The module path to resolve.
+   * @param options Options for require.resolve.
+   * @returns The resolved path.
+   */
+  private static resolveModule(modulePath: string, options?: { paths?: string[] }): string {
+    return require.resolve(modulePath, options);
+  }
+
+  /**
    * Initialize the tree-sitter parser for the given language using WASM.
    */
   private async _initParser(lang: string): Promise<void> {
@@ -159,7 +169,7 @@ export class CodeChunker extends BaseChunker {
     // hierarchy (e.g., monorepos).
     let wasmPath: string;
     try {
-      wasmPath = require.resolve(wasmSubpath, { paths: [__dirname] });
+      wasmPath = CodeChunker.resolveModule(wasmSubpath, { paths: [__dirname] });
     } catch (err: any) {
       if (err.code !== "MODULE_NOT_FOUND") {
         throw err; // Re-throw unexpected errors

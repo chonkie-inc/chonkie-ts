@@ -4,6 +4,30 @@ import {
 } from "../../src/chonkie/chunker/code";
 import { CodeChunk } from "../../src/chonkie/types/code";
 
+/**
+ * -----------------------------------------------------------------------------
+ * NOTE ON MOCKING `web-tree-sitter`
+ * -----------------------------------------------------------------------------
+ * The tests in the "WASM file resolution" suite are *unit-tests* for the path
+ *-resolution logic inside `CodeChunker._initParser()`.  We only want to verify
+ * that:
+ *   1. `require.resolve()` is attempted first.
+ *   2. The fallback search is triggered when that fails.
+ *   3. Helpful errors are emitted when neither strategy succeeds.
+ *
+ * Running a *real* Tree-Sitter parser is unnecessary here and would require
+ * bundling actual language WASM binaries (e.g. `tree-sitter-javascript.wasm`).
+ * Instead we fully mock the `web-tree-sitter` module so that:
+ *   • `Language.load()` resolves successfully regardless of the buffer.
+ *   • `new Parser()` returns a lightweight stub whose `parse()` function
+ *     pretends to succeed.
+ *
+ * This keeps the tests fast, avoids environment-specific WASM issues, and makes
+ * it clear we are *only* exercising the resolution branch-logic.
+ */
+
+// The global `jest` object is available in the test environment, no import needed.
+
 describe("CodeChunker", () => {
   // Sample JavaScript code for testing
   const sampleJsCode = `
@@ -274,69 +298,121 @@ print(f"Factorial of 5 is {result}")
   });
 
   describe("WASM file resolution", () => {
-    const fs = require("fs");
+    const fs = require("fs")
+
+    // Patch `web-tree-sitter` once for this suite so the loader is satisfied
+    // even when we feed it empty/invalid WASM bytes.  Doing this *here*
+    // ensures the mocking is scoped to this test suite only.
+    beforeAll(() => {
+      const treeSitter = require("web-tree-sitter")
+
+      // Only mock the Parser constructor, but let Language.load behave normally
+      // for error tests. This way Language.load will fail naturally when given
+      // invalid WASM data, which is what we want for testing error paths.
+      const ParserCtor = treeSitter.Parser
+      if (ParserCtor && ParserCtor.prototype) {
+        if (!jest.isMockFunction(ParserCtor.prototype.setLanguage)) {
+          jest
+            .spyOn(ParserCtor.prototype, "setLanguage")
+            .mockImplementation(() => {})
+        }
+        if (!jest.isMockFunction(ParserCtor.prototype.parse)) {
+          jest
+            .spyOn(ParserCtor.prototype, "parse")
+            .mockImplementation(() => ({ rootNode: { children: [] } }))
+        }
+      }
+    })
 
     afterEach(() => {
-      jest.restoreAllMocks();
-    });
+      jest.clearAllMocks() // keep module mocks in place, just reset call counts
+    })
 
     it("should use fallback when require.resolve fails and find wasm file", async () => {
-      jest.spyOn(require, "resolve").mockImplementation(() => {
-        const error: any = new Error(
-          "Cannot find module 'tree-sitter-wasms/out/tree-sitter-javascript.wasm'"
-        );
-        error.code = "MODULE_NOT_FOUND";
-        throw error;
-      });
-
-      const mockNodeModules = "/tmp/node_modules";
+      jest.spyOn(CodeChunker as any, "resolveModule").mockImplementation(() => {
+        const error = new Error() as any
+        error.code = "MODULE_NOT_FOUND"
+        throw error
+      })
+      const mockNodeModules = "/tmp/node_modules"
       jest
         .spyOn(CodeChunker as any, "findNearestNodeModules")
-        .mockReturnValue(mockNodeModules);
-      jest.spyOn(fs, "existsSync").mockReturnValue(true);
-      jest.spyOn(fs, "readFileSync").mockReturnValue(Buffer.from("")); // Mock wasm content
+        .mockReturnValue(mockNodeModules)
+      jest.spyOn(fs, "existsSync").mockReturnValue(true)
+      jest.spyOn(fs, "readFileSync").mockReturnValue(Buffer.from(""))
 
-      // This should not throw an error as the fallback should work
-      const chunker = await CodeChunker.create({ lang: "javascript" });
-      await expect(chunker.chunk("const a = 1;")).resolves.toBeDefined();
-    });
+      // For this success test, we need Language.load to succeed, so mock it
+      const treeSitter = require("web-tree-sitter")
+      const languageLoadSpy = jest
+        .spyOn(treeSitter.Language, "load")
+        .mockResolvedValue({})
+
+      const chunker = await CodeChunker.create({ lang: "javascript" })
+      await expect(chunker.chunk("const a = 1;")).resolves.toBeDefined()
+
+      languageLoadSpy.mockRestore()
+    })
 
     it("should throw error if require.resolve fails and tree-sitter-wasms is not found", async () => {
-      jest.spyOn(require, "resolve").mockImplementation(() => {
-        const error: any = new Error(
-          "Cannot find module 'tree-sitter-wasms/out/tree-sitter-javascript.wasm'"
-        );
-        error.code = "MODULE_NOT_FOUND";
-        throw error;
-      });
-
+      jest.spyOn(CodeChunker as any, "resolveModule").mockImplementation(() => {
+        const error = new Error() as any
+        error.code = "MODULE_NOT_FOUND"
+        throw error
+      })
       jest
         .spyOn(CodeChunker as any, "findNearestNodeModules")
-        .mockReturnValue(null);
+        .mockReturnValue(null)
 
-      await expect(CodeChunker.create({ lang: "javascript" })).rejects.toThrow(
+      // Don't mock Language.load here - let it fail naturally
+      const chunkerPromise = (
+        await CodeChunker.create({ lang: "javascript" })
+      ).chunk("const a = 1;")
+      await expect(chunkerPromise).rejects.toThrow(
         "Tree-sitter-wasms package not found. This is required for loading tree-sitter language WASM files."
-      );
-    });
+      )
+    })
 
     it("should throw error if require.resolve fails and wasm file does not exist in fallback path", async () => {
-      jest.spyOn(require, "resolve").mockImplementation(() => {
-        const error: any = new Error(
-          "Cannot find module 'tree-sitter-wasms/out/tree-sitter-javascript.wasm'"
-        );
-        error.code = "MODULE_NOT_FOUND";
-        throw error;
-      });
-
-      const mockNodeModules = "/tmp/node_modules";
+      jest.spyOn(CodeChunker as any, "resolveModule").mockImplementation(() => {
+        const error = new Error() as any
+        error.code = "MODULE_NOT_FOUND"
+        throw error
+      })
+      const mockNodeModules = "/tmp/node_modules"
       jest
         .spyOn(CodeChunker as any, "findNearestNodeModules")
-        .mockReturnValue(mockNodeModules);
-      jest.spyOn(fs, "existsSync").mockReturnValue(false);
+        .mockReturnValue(mockNodeModules)
+      jest.spyOn(fs, "existsSync").mockReturnValue(false)
 
-      await expect(CodeChunker.create({ lang: "javascript" })).rejects.toThrow(
+      // Don't mock Language.load here - let it fail naturally
+      const chunkerPromise = (
+        await CodeChunker.create({ lang: "javascript" })
+      ).chunk("const a = 1;")
+      await expect(chunkerPromise).rejects.toThrow(
         /Tree-sitter WASM file for language "javascript" not found at/
-      );
-    });
+      )
+    })
+
+    it("should use require.resolve path when WASM file is found without fallback", async () => {
+      const mockPath = "/tmp/tree-sitter-javascript.wasm"
+
+      // Mock require.resolve to return a valid path immediately
+      jest.spyOn(CodeChunker as any, "resolveModule").mockReturnValue(mockPath)
+
+      // Mock fs.readFileSync to return an empty buffer (pretend WASM content)
+      jest.spyOn(fs, "readFileSync").mockReturnValue(Buffer.from(""))
+
+      // For this success test, we need Language.load to succeed, so mock it
+      const treeSitter = require("web-tree-sitter")
+      const languageLoadSpy = jest
+        .spyOn(treeSitter.Language, "load")
+        .mockResolvedValue({})
+
+      // No need to mock existsSync here because the primary branch does not call it
+      const chunker = await CodeChunker.create({ lang: "javascript" })
+      await expect(chunker.chunk("const a = 1;")).resolves.toBeDefined()
+
+      languageLoadSpy.mockRestore()
+    })
   });
 });
