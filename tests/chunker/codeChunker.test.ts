@@ -298,8 +298,6 @@ print(f"Factorial of 5 is {result}")
   });
 
   describe("WASM file resolution", () => {
-    const fs = require("fs")
-
     // Patch `web-tree-sitter` once for this suite so the loader is satisfied
     // even when we feed it empty/invalid WASM bytes.  Doing this *here*
     // ensures the mocking is scoped to this test suite only.
