@@ -3,6 +3,8 @@ import {
   CodeChunkerOptions,
 } from "../../src/chonkie/chunker/code";
 import { CodeChunk } from "../../src/chonkie/types/code";
+import treeSitter from "web-tree-sitter";
+import fs from "fs";
 
 /**
  * -----------------------------------------------------------------------------
@@ -302,6 +304,9 @@ print(f"Factorial of 5 is {result}")
     // even when we feed it empty/invalid WASM bytes.  Doing this *here*
     // ensures the mocking is scoped to this test suite only.
     beforeAll(() => {
+      // Clear caches to ensure tests don't interfere with each other
+      (CodeChunker as any).formattedLangCache.clear();
+      (CodeChunker as any).wasmPathCache.clear();
       // Only mock the Parser constructor, but let Language.load behave normally
       // for error tests. This way Language.load will fail naturally when given
       // invalid WASM data, which is what we want for testing error paths.
@@ -321,8 +326,11 @@ print(f"Factorial of 5 is {result}")
     });
 
     afterEach(() => {
-      jest.clearAllMocks() // keep module mocks in place, just reset call counts
-    })
+      jest.clearAllMocks(); // keep module mocks in place, just reset call counts
+      // Clear caches between tests to ensure isolation
+      (CodeChunker as any).formattedLangCache.clear();
+      (CodeChunker as any).wasmPathCache.clear();
+    });
 
     it("should use fallback when require.resolve fails and find wasm file", async () => {
       jest.spyOn(CodeChunker as any, "resolveModule").mockImplementation(() => {
@@ -338,7 +346,6 @@ print(f"Factorial of 5 is {result}")
       jest.spyOn(fs, "readFileSync").mockReturnValue(Buffer.from(""))
 
       // For this success test, we need Language.load to succeed, so mock it
-      const treeSitter = require("web-tree-sitter")
       const languageLoadSpy = jest
         .spyOn(treeSitter.Language, "load")
         .mockResolvedValue({})
@@ -399,7 +406,6 @@ print(f"Factorial of 5 is {result}")
       jest.spyOn(fs, "readFileSync").mockReturnValue(Buffer.from(""))
 
       // For this success test, we need Language.load to succeed, so mock it
-      const treeSitter = require("web-tree-sitter")
       const languageLoadSpy = jest
         .spyOn(treeSitter.Language, "load")
         .mockResolvedValue({})
