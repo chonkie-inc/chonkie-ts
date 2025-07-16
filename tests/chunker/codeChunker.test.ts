@@ -302,25 +302,23 @@ print(f"Factorial of 5 is {result}")
     // even when we feed it empty/invalid WASM bytes.  Doing this *here*
     // ensures the mocking is scoped to this test suite only.
     beforeAll(() => {
-      const treeSitter = require("web-tree-sitter")
-
       // Only mock the Parser constructor, but let Language.load behave normally
       // for error tests. This way Language.load will fail naturally when given
       // invalid WASM data, which is what we want for testing error paths.
-      const ParserCtor = treeSitter.Parser
+      const ParserCtor = treeSitter.Parser;
       if (ParserCtor && ParserCtor.prototype) {
         if (!jest.isMockFunction(ParserCtor.prototype.setLanguage)) {
           jest
             .spyOn(ParserCtor.prototype, "setLanguage")
-            .mockImplementation(() => {})
+            .mockImplementation(() => {});
         }
         if (!jest.isMockFunction(ParserCtor.prototype.parse)) {
           jest
             .spyOn(ParserCtor.prototype, "parse")
-            .mockImplementation(() => ({ rootNode: { children: [] } }))
+            .mockImplementation(() => ({ rootNode: { children: [] } }));
         }
       }
-    })
+    });
 
     afterEach(() => {
       jest.clearAllMocks() // keep module mocks in place, just reset call counts
