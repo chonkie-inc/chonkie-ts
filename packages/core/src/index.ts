@@ -1,6 +1,12 @@
 /**
  * @chonkie/core
- * Core chunking library for Chonkie
+ * Core chunking library for Chonkie - lightweight and efficient text chunking
  */
 
-export const version = '0.0.1';
+export { RecursiveChunker } from '@/recursive';
+export type { RecursiveChunkerOptions } from '@/recursive';
+
+export { Tokenizer } from '@/tokenizer';
+
+export { Chunk, RecursiveLevel, RecursiveRules } from '@/types';
+export type { RecursiveLevelConfig, RecursiveRulesConfig, IncludeDelim } from '@/types';

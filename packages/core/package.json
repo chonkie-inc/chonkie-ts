@@ -22,7 +22,7 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && tsc-alias",
     "test": "jest"
   },
   "files": [
@@ -33,5 +33,8 @@
     "chunking",
     "text-processing",
     "tokenization"
-  ]
+  ],
+  "devDependencies": {
+    "tsc-alias": "^1.8.16"
+  }
 }
