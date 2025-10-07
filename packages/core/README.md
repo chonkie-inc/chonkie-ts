@@ -22,18 +22,22 @@ _Core chunking library for Chonkie - lightweight and efficient text chunking wit
 
 ## Installation
 
+Install with `npm`:
 ```bash
 npm i @chonkie/core
 ```
 
+Install with `pnpm`:
 ```bash
 pnpm add @chonkie/core
 ```
 
+Install with `yarn`:
 ```bash
 yarn add @chonkie/core
 ```
 
+Install with `bun`:
 ```bash
 bun add @chonkie/core
 ```
