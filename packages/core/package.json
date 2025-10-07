@@ -1,0 +1,37 @@
+{
+  "name": "@chonkie/core",
+  "version": "0.0.1",
+  "description": "Core chunking library for Chonkie - lightweight and efficient text chunking",
+  "license": "MIT",
+  "homepage": "https://docs.chonkie.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chonkie-inc/chonkie-ts.git",
+    "directory": "packages/core"
+  },
+  "author": "Bhavnick Minhas",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc",
+    "test": "jest"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "chonkie",
+    "chunking",
+    "text-processing",
+    "tokenization"
+  ]
+}
