@@ -359,8 +359,60 @@ import type {
   RecursiveLevelConfig,
   RecursiveRulesConfig,
   IncludeDelim
-} from '@chonkie/core';
+} from '@chonkiejs/core';
 ```
+
+## FAQ
+
+### Top-level await error with tsx/esbuild
+
+**Error:**
+```
+ERROR: Top-level await is currently not supported with the "cjs" output format
+```
+
+**Solution:**
+
+If you're using top-level await, ensure your project is configured for ESM:
+
+**Option 1: Use ESM (Recommended)**
+
+Add to your `package.json`:
+```json
+{
+  "type": "module"
+}
+```
+
+**Option 2: Wrap in async function**
+
+```typescript
+// Instead of top-level await:
+const chunker = new RecursiveChunker();
+const chunks = await chunker.chunk(text); // ❌ Error
+
+// Use this:
+async function main() {
+  const chunker = new RecursiveChunker();
+  const chunks = await chunker.chunk(text); // ✅ Works
+}
+
+main();
+```
+
+**Option 3: Use .mjs extension**
+
+Rename your file from `script.ts` to `script.mts` or `script.js` to `script.mjs`.
+
+### Cannot find module '@chonkiejs/core'
+
+Make sure you've installed the package:
+
+```bash
+npm install @chonkiejs/core
+```
+
+If using TypeScript, ensure `node_modules` is not in your `exclude` array in `tsconfig.json`.
 
 ## License
 

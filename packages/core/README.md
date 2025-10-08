@@ -2,12 +2,12 @@
 
 ![Chonkie Logo](../../assets/chonkie_logo_br_transparent_bg.png)
 
-# @chonkie/core
+# @chonkiejs/core
 
 _Core chunking library for Chonkie - lightweight and efficient text chunking with zero dependencies._
 
-[![npm version](https://img.shields.io/npm/v/@chonkie/core)](https://www.npmjs.com/package/@chonkie/core)
-[![npm license](https://img.shields.io/npm/l/@chonkie/core)](https://www.npmjs.com/package/@chonkie/core)
+[![npm version](https://img.shields.io/npm/v/@chonkiejs/core)](https://www.npmjs.com/package/@chonkiejs/core)
+[![npm license](https://img.shields.io/npm/l/@chonkiejs/core)](https://www.npmjs.com/package/@chonkiejs/core)
 [![Documentation](https://img.shields.io/badge/docs-DOCS.md-blue.svg)](./DOCS.md)
 [![GitHub](https://img.shields.io/badge/github-chonkie--ts-black.svg?logo=github)](https://github.com/chonkie-inc/chonkie-ts)
 
@@ -24,28 +24,28 @@ _Core chunking library for Chonkie - lightweight and efficient text chunking wit
 
 Install with `npm`:
 ```bash
-npm i @chonkie/core
+npm i @chonkiejs/core
 ```
 
 Install with `pnpm`:
 ```bash
-pnpm add @chonkie/core
+pnpm add @chonkiejs/core
 ```
 
 Install with `yarn`:
 ```bash
-yarn add @chonkie/core
+yarn add @chonkiejs/core
 ```
 
 Install with `bun`:
 ```bash
-bun add @chonkie/core
+bun add @chonkiejs/core
 ```
 
 ## Quick Start
 
 ```typescript
-import { RecursiveChunker } from '@chonkie/core';
+import { RecursiveChunker } from '@chonkiejs/core';
 
 // Create a chunker
 const chunker = new RecursiveChunker({

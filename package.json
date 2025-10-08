@@ -13,9 +13,13 @@
   "scripts": {
     "clean": "rimraf packages/*/dist",
     "build": "npm run clean && npm run build --workspaces",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.21",
     "dotenv": "^16.5.0",
