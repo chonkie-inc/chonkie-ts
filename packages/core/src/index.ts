@@ -6,6 +6,9 @@
 export { RecursiveChunker } from '@/recursive';
 export type { RecursiveChunkerOptions } from '@/recursive';
 
+export { TokenChunker } from '@/token';
+export type { TokenChunkerOptions } from '@/token';
+
 export { Tokenizer } from '@/tokenizer';
 
 export { Chunk, RecursiveLevel, RecursiveRules } from '@/types';

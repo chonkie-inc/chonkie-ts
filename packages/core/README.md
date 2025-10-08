@@ -48,7 +48,7 @@ bun add @chonkiejs/core
 import { RecursiveChunker } from '@chonkiejs/core';
 
 // Create a chunker
-const chunker = new RecursiveChunker({
+const chunker = await RecursiveChunker.create({
   chunkSize: 512,
   minCharactersPerChunk: 24
 });
@@ -68,6 +68,7 @@ for (const chunk of chunks) {
 | Name | Description |
 |------|-------------|
 | `RecursiveChunker` | Recursively splits text using hierarchical rules (paragraphs → sentences → punctuation → words → characters). Each level only activates if chunks exceed the configured size. |
+| `TokenChunker` | Splits text into fixed-size token chunks with optional overlap. Uses character-based tokenization by default, or HuggingFace models with @chonkiejs/token. |
 
 For detailed API documentation, configuration options, and advanced usage, see [DOCS.md](./DOCS.md).
 

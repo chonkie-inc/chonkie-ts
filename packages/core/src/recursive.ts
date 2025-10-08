@@ -9,8 +9,8 @@ export interface RecursiveChunkerOptions {
   chunkSize?: number;
   /** Rules defining the recursive chunking hierarchy */
   rules?: RecursiveRules;
-  /** Tokenizer instance to use for counting tokens */
-  tokenizer?: Tokenizer;
+  /** Tokenizer instance or model name (default: 'character') */
+  tokenizer?: Tokenizer | string;
   /** Minimum number of characters per chunk when merging */
   minCharactersPerChunk?: number;
 }
@@ -27,22 +27,68 @@ export class RecursiveChunker {
   public readonly chunkSize: number;
   public readonly rules: RecursiveRules;
   public readonly minCharactersPerChunk: number;
-  private readonly tokenizer: Tokenizer;
+  private tokenizer: Tokenizer;
   private readonly sep: string = '✄';
   private readonly CHARS_PER_TOKEN: number = 6.5;
 
-  constructor(options: RecursiveChunkerOptions = {}) {
-    this.chunkSize = options.chunkSize ?? 512;
-    this.rules = options.rules ?? new RecursiveRules();
-    this.tokenizer = options.tokenizer ?? new Tokenizer();
-    this.minCharactersPerChunk = options.minCharactersPerChunk ?? 24;
-
-    if (this.chunkSize <= 0) {
+  private constructor(
+    tokenizer: Tokenizer,
+    chunkSize: number,
+    rules: RecursiveRules,
+    minCharactersPerChunk: number
+  ) {
+    if (chunkSize <= 0) {
       throw new Error('chunkSize must be greater than 0');
     }
-    if (this.minCharactersPerChunk <= 0) {
+    if (minCharactersPerChunk <= 0) {
       throw new Error('minCharactersPerChunk must be greater than 0');
     }
+
+    this.tokenizer = tokenizer;
+    this.chunkSize = chunkSize;
+    this.rules = rules;
+    this.minCharactersPerChunk = minCharactersPerChunk;
+  }
+
+  /**
+   * Create a RecursiveChunker instance.
+   *
+   * @param options - Configuration options
+   * @returns Promise resolving to RecursiveChunker instance
+   *
+   * @example
+   * // Character-based (no dependencies)
+   * const chunker = await RecursiveChunker.create({ chunkSize: 512 });
+   *
+   * @example
+   * // With HuggingFace tokenizer (requires @chonkiejs/token)
+   * const chunker = await RecursiveChunker.create({
+   *   tokenizer: 'gpt2',
+   *   chunkSize: 512
+   * });
+   */
+  static async create(options: RecursiveChunkerOptions = {}): Promise<RecursiveChunker> {
+    const {
+      tokenizer = 'character',
+      chunkSize = 512,
+      rules = new RecursiveRules(),
+      minCharactersPerChunk = 24,
+    } = options;
+
+    let tokenizerInstance: Tokenizer;
+
+    if (typeof tokenizer === 'string') {
+      tokenizerInstance = await Tokenizer.create(tokenizer);
+    } else {
+      tokenizerInstance = tokenizer;
+    }
+
+    return new RecursiveChunker(
+      tokenizerInstance,
+      chunkSize,
+      rules,
+      minCharactersPerChunk
+    );
   }
 
   /**

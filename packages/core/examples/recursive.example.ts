@@ -7,7 +7,7 @@ async function main() {
   // Example 1: Basic usage with default settings
   console.log('\n📝 Example 1: Basic Chunking\n');
 
-  const chunker = new RecursiveChunker({
+  const chunker = await RecursiveChunker.create({
     chunkSize: 100,
     minCharactersPerChunk: 20
   });
@@ -37,7 +37,7 @@ This hierarchical method ensures that chunks are semantically meaningful. Each c
   console.log('='.repeat(60));
   console.log('\n📝 Example 2: Custom Rules (Paragraphs Only)\n');
 
-  const customChunker = new RecursiveChunker({
+  const customChunker = await RecursiveChunker.create({
     chunkSize: 150,
     rules: new RecursiveRules({
       levels: [
@@ -70,7 +70,7 @@ Third paragraph concludes the example.`;
   console.log('\n📝 Example 3: Long Text Handling\n');
 
   const longText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(20);
-  const longChunker = new RecursiveChunker({ chunkSize: 100 });
+  const longChunker = await RecursiveChunker.create({ chunkSize: 100 });
   const longChunks = await longChunker.chunk(longText);
 
   console.log(`Input text length: ${longText.length} characters`);

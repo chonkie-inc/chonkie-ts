@@ -1,13 +1,13 @@
 {
-  "name": "@chonkiejs/core",
-  "version": "0.0.2",
-  "description": "Core chunking library for Chonkie - lightweight and efficient text chunking",
+  "name": "@chonkiejs/token",
+  "version": "0.0.1",
+  "description": "HuggingFace tokenizer support for Chonkie - extends @chonkiejs/core with real tokenization",
   "license": "MIT",
   "homepage": "https://docs.chonkie.ai",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chonkie-inc/chonkie-ts.git",
-    "directory": "packages/core"
+    "directory": "packages/token"
   },
   "author": "Bhavnick Minhas",
   "type": "module",
@@ -30,17 +30,23 @@
   ],
   "keywords": [
     "chonkie",
-    "chunking",
-    "text-processing",
-    "tokenization"
+    "tokenizer",
+    "huggingface",
+    "transformers",
+    "gpt2",
+    "bert"
   ],
-  "devDependencies": {
-    "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.16",
-    "tsx": "^4.20.6",
-    "vitest": "^3.2.4"
+  "peerDependencies": {
+    "@chonkiejs/core": ">=0.0.2"
   },
   "dependencies": {
-    "@chonkiejs/core": "^0.0.2"
+    "@huggingface/transformers": "^3.5.1"
+  },
+  "devDependencies": {
+    "@chonkiejs/core": "^0.0.2",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }
