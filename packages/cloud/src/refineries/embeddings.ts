@@ -6,10 +6,9 @@
 import { Chunk } from "@chonkiejs/core";
 import { CloudBaseChunker } from "@/base";
 
-// TODO(bhavnick): Add a default embeddding model to the embeddings refinery.
 export interface EmbeddingsRefineryOptions {
-  /** Embedding model to use (required) */
-  embeddingModel: string;
+  /** Embedding model to use (default: "minishlab/potion-retrieval-32M") */
+  embeddingModel?: string;
   /** API key (reads from CHONKIE_API_KEY env var if not provided) */
   apiKey?: string;
   /** Base URL for API (default: "https://api.chonkie.ai") */
@@ -30,11 +29,7 @@ interface ChunkData {
 export class EmbeddingsRefinery extends CloudBaseChunker {
   private readonly embeddingModel: string;
 
-  constructor(options: EmbeddingsRefineryOptions) {
-    if (!options.embeddingModel) {
-      throw new Error("Embedding model is required for embeddings refinement");
-    }
-
+  constructor(options: EmbeddingsRefineryOptions = {}) {
     const apiKey = options.apiKey || process.env.CHONKIE_API_KEY;
     if (!apiKey) {
       throw new Error(
@@ -43,7 +38,7 @@ export class EmbeddingsRefinery extends CloudBaseChunker {
     }
 
     super({ apiKey, baseUrl: options.baseUrl });
-    this.embeddingModel = options.embeddingModel;
+    this.embeddingModel = options.embeddingModel || 'minishlab/potion-retrieval-32M';
   }
 
   /**
@@ -75,6 +70,7 @@ export class EmbeddingsRefinery extends CloudBaseChunker {
           startIndex: chunkData.start_index,
           endIndex: chunkData.end_index,
           tokenCount: chunkData.token_count,
+          embedding: chunkData.embedding,
         })
     );
   }

@@ -10,17 +10,21 @@ export class Chunk {
   public endIndex: number;
   /** The number of tokens in the chunk */
   public tokenCount: number;
+  /** Optional embedding vector for the chunk */
+  public embedding?: number[];
 
   constructor(data: {
     text: string;
     startIndex: number;
     endIndex: number;
     tokenCount: number;
+    embedding?: number[];
   }) {
     this.text = data.text;
     this.startIndex = data.startIndex;
     this.endIndex = data.endIndex;
     this.tokenCount = data.tokenCount;
+    this.embedding = data.embedding;
 
     if (this.startIndex > this.endIndex) {
       throw new Error('Start index must be less than or equal to end index');
