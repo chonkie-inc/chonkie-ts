@@ -16,6 +16,7 @@ _Cloud-based chunkers for Chonkie via api.chonkie.ai - semantic, neural, and AI-
 ## Features
 🌐 **Cloud-Powered** - Leverage powerful chunking via api.chonkie.ai</br>
 🧠 **Semantic & Neural** - AI-powered intelligent chunking</br>
+🔧 **Refineries** - Post-process chunks with embeddings and overlap</br>
 🔑 **Easy Auth** - Auto-reads CHONKIE_API_KEY from environment</br>
 📦 **Returns Chunk Objects** - Compatible with @chonkiejs/core</br>
 ✨ **Clean API** - Simple, consistent interface across all chunkers</br>
@@ -80,6 +81,13 @@ for (const chunk of chunks) {
 | `NeuralChunker` | Uses neural networks for intelligent, context-aware chunking |
 | `CodeChunker` | Splits code into structurally meaningful chunks based on AST parsing |
 | `LateChunker` | Recursive chunking with embeddings for enhanced semantic coherence |
+
+## Available Refineries
+
+| Name | Description |
+|------|-------------|
+| `EmbeddingsRefinery` | Post-processes chunks by adding embeddings using specified embedding model |
+| `OverlapRefinery` | Adds contextual overlap between chunks for better coherence |
 
 For detailed API documentation, configuration options, and advanced usage, see [DOCS.md](./DOCS.md).
 

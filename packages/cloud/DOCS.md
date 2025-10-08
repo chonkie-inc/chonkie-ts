@@ -6,11 +6,17 @@ Complete API reference and usage guide for @chonkiejs/cloud.
 
 - [Installation](#installation)
 - [Authentication](#authentication)
-- [TokenChunker](#tokenchunker)
-- [SentenceChunker](#sentencechunker)
-- [RecursiveChunker](#recursivechunker)
-- [SemanticChunker](#semanticchunker)
-- [NeuralChunker](#neuralchunker)
+- [Chunkers](#chunkers)
+  - [TokenChunker](#tokenchunker)
+  - [SentenceChunker](#sentencechunker)
+  - [RecursiveChunker](#recursivechunker)
+  - [SemanticChunker](#semanticchunker)
+  - [NeuralChunker](#neuralchunker)
+  - [CodeChunker](#codechunker)
+  - [LateChunker](#latechunker)
+- [Refineries](#refineries)
+  - [EmbeddingsRefinery](#embeddingsrefinery)
+  - [OverlapRefinery](#overlaprefinery)
 - [Common Types](#common-types)
 - [Error Handling](#error-handling)
 
@@ -49,7 +55,9 @@ const chunker = new TokenChunker({
 
 Get your API key at: https://api.chonkie.ai/dashboard
 
-## TokenChunker
+## Chunkers
+
+### TokenChunker
 
 Splits text into fixed-size token chunks with optional overlap.
 
@@ -209,6 +217,133 @@ const chunker = new NeuralChunker();
 const chunks = await chunker.chunk({
   text: 'Neural networks process information efficiently.'
 });
+```
+
+### CodeChunker
+
+Splits code into structurally meaningful chunks based on AST parsing.
+
+#### Constructor Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `tokenizer` | `string` | `"gpt2"` | Tokenizer to use |
+| `chunkSize` | `number` | `1500` | Maximum tokens per chunk |
+| `language` | `string` | **(required)** | Programming language (e.g., "python", "javascript") |
+| `apiKey` | `string` | `process.env.CHONKIE_API_KEY` | API key |
+| `baseUrl` | `string` | `"https://api.chonkie.ai"` | API base URL |
+
+#### Example
+
+```typescript
+import { CodeChunker } from '@chonkiejs/cloud';
+
+const chunker = new CodeChunker({
+  language: 'python',
+  chunkSize: 1500
+});
+
+const chunks = await chunker.chunk({
+  text: 'def hello():\n    print("Hello")'
+});
+```
+
+### LateChunker
+
+Combines recursive chunking with embeddings for enhanced semantic coherence.
+
+#### Constructor Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `embeddingModel` | `string` | `"all-MiniLM-L6-v2"` | Embedding model |
+| `chunkSize` | `number` | `512` | Maximum tokens per chunk |
+| `recipe` | `string` | `"default"` | Recipe name |
+| `lang` | `string` | `"en"` | Language for recipe |
+| `minCharactersPerChunk` | `number` | `24` | Minimum chars per chunk |
+| `apiKey` | `string` | `process.env.CHONKIE_API_KEY` | API key |
+| `baseUrl` | `string` | `"https://api.chonkie.ai"` | API base URL |
+
+#### Example
+
+```typescript
+import { LateChunker } from '@chonkiejs/cloud';
+
+const chunker = new LateChunker({
+  chunkSize: 512,
+  embeddingModel: 'all-MiniLM-L6-v2'
+});
+
+const chunks = await chunker.chunk({ text: 'Your document...' });
+```
+
+## Refineries
+
+Refineries post-process chunks to enhance them with additional data or modify their structure.
+
+### EmbeddingsRefinery
+
+Adds embeddings to existing chunks using a specified embedding model.
+
+#### Constructor Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `embeddingModel` | `string` | **(required)** | Embedding model to use |
+| `apiKey` | `string` | `process.env.CHONKIE_API_KEY` | API key |
+| `baseUrl` | `string` | `"https://api.chonkie.ai"` | API base URL |
+
+#### Example
+
+```typescript
+import { TokenChunker, EmbeddingsRefinery } from '@chonkiejs/cloud';
+
+// First, create chunks
+const chunker = new TokenChunker({ chunkSize: 256 });
+const chunks = await chunker.chunk({ text: 'Your text...' });
+
+// Then, add embeddings
+const refinery = new EmbeddingsRefinery({
+  embeddingModel: 'sentence-transformers/all-MiniLM-L6-v2'
+});
+
+const chunksWithEmbeddings = await refinery.refine(chunks);
+```
+
+### OverlapRefinery
+
+Adds contextual overlap between chunks to maintain coherence across chunk boundaries.
+
+#### Constructor Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `tokenizer` | `string` | `"character"` | Tokenizer to use |
+| `contextSize` | `number` | `0.25` | Context size (fraction or token count) |
+| `mode` | `'token' \| 'recursive'` | `"token"` | Overlap mode |
+| `method` | `'suffix' \| 'prefix'` | `"suffix"` | Where to add context |
+| `recipe` | `string` | `"default"` | Recipe for recursive mode |
+| `lang` | `string` | `"en"` | Language for recipe |
+| `merge` | `boolean` | `true` | Merge overlapping chunks |
+| `apiKey` | `string` | `process.env.CHONKIE_API_KEY` | API key |
+| `baseUrl` | `string` | `"https://api.chonkie.ai"` | API base URL |
+
+#### Example
+
+```typescript
+import { TokenChunker, OverlapRefinery } from '@chonkiejs/cloud';
+
+// Create chunks
+const chunker = new TokenChunker({ chunkSize: 256 });
+const chunks = await chunker.chunk({ text: 'Your text...' });
+
+// Add overlap for context
+const refinery = new OverlapRefinery({
+  contextSize: 0.25,  // 25% overlap
+  method: 'suffix'
+});
+
+const chunksWithOverlap = await refinery.refine(chunks);
 ```
 
 ## Common Types
