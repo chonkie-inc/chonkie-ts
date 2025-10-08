@@ -38,56 +38,37 @@ We built `chonkie-ts` while developing a TypeScript web app that needed fast, on
 
 ## 📦 Installation
 
-Simply install Chonkie using npm:
-
 ```bash
-npm install chonkie
+npm install @chonkiejs/core
 ```
-
-Chonkie believes in having minimum default dependencies, and maximum flexibility, and so we have a lot of optional dependencies that you can opt out of if you don't need them. You can get the minimal install by running:
-
-```bash
-npm install chonkie --omit=optional
-```
-
-Learn more about the optional dependencies in the [DOCS.md](./DOCS.md) file.
 
 ## 📚 Usage
 
-Chonkie is a simple and easy to use library for chunking text. It is designed to be used in any project that needs to chunk text, and is a great way to get started with text chunking.
+```typescript
+import { RecursiveChunker } from '@chonkiejs/core';
 
-```ts
-import { TokenChunker } from 'chonkie';
+// Create a chunker
+const chunker = await RecursiveChunker.create({
+  chunkSize: 512
+});
 
-async function main() {
-  // Create a token chunker with default options
-  const chunker = await TokenChunker.create();
+// Chunk your text
+const chunks = await chunker.chunk('Your text here...');
 
-  // Chunk a string
-  const chunks = await chunker.chunk('Woah! Chonkie is such a great ts library!');
-
-  // Print the chunks
-  for (const chunk of chunks) {
-    console.log(chunk.text);
-    console.log(chunk.token_count);
-  }
+// Use the chunks
+for (const chunk of chunks) {
+  console.log(chunk.text);
+  console.log(`Tokens: ${chunk.tokenCount}`);
 }
-
-main();
 ```
 
-More examples can be found in the [DOCS](./DOCS.md) or in the [examples](./examples) folder.
+## 📦 Packages
 
-## Chunkers
-
-`chonkie-ts` is currently a work in progress and does not have feature parity with the original `chonkie` library yet. Here's an overview of the chunkers that are currently implemented:
-
-| Name | Description |
-|------|-------------|
-| `TokenChunker` | Splits text into fixed-size token chunks |
-| `SentenceChunker` | Splits text into chunks based on sentences.  |
-| `RecursiveChunker` | Splits text hierarchically using customizable rules to create semantically meaningful chunks. |
-| `CodeChunker` | Splits code into structurally meaningful chunks. |
+| Package | Description | Dependencies |
+|---------|-------------|--------------|
+| [@chonkiejs/core](./packages/core) | Local chunking (Recursive, Token) with character-based tokenization | Zero |
+| [@chonkiejs/cloud](./packages/cloud) | Cloud-based chunkers (Semantic, Neural, Code, etc.) via api.chonkie.ai | @chonkiejs/core |
+| [@chonkiejs/token](./packages/token) | HuggingFace tokenizer support for core chunkers | @huggingface/transformers |
 
 ## Contributing
 
@@ -100,7 +81,7 @@ Remember: No contribution is too small for this tiny hippo!
 Chonkie would like to CHONK its way through a special thanks to all the users and contributors who have helped make this library what it is today! Your feedback, issue reports, and improvements have helped make Chonkie the CHONKIEST it can be.
 
 And of course, special thanks to [Moto Moto](https://www.youtube.com/watch?v=I0zZC4wtqDQ&t=5s) for endorsing Chonkie with his famous quote:
-> "I like them big, I like them chonkie in TypeScript" ~ Moto Moto... definitly did not say this
+> "I like them big, I like them chonkie in TypeScript" ~ Moto Moto... definitely did not say this
 
 ## Citation
 

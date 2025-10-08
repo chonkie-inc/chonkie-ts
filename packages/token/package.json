@@ -1,0 +1,53 @@
+{
+  "name": "@chonkiejs/token",
+  "version": "0.0.2",
+  "description": "HuggingFace tokenizer support for Chonkie - extends @chonkiejs/core with real tokenization",
+  "license": "MIT",
+  "homepage": "https://docs.chonkie.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chonkie-inc/chonkie-ts.git",
+    "directory": "packages/token"
+  },
+  "author": "Bhavnick Minhas",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc && tsc-alias",
+    "test": "echo 'No tests for @chonkiejs/token yet'"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "chonkie",
+    "tokenizer",
+    "huggingface",
+    "transformers",
+    "gpt2",
+    "bert"
+  ],
+  "peerDependencies": {
+    "@chonkiejs/core": ">=0.0.4"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.5.1"
+  },
+  "devDependencies": {
+    "@chonkiejs/core": "^0.0.4",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

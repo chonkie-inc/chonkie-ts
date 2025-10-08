@@ -1,105 +1,29 @@
 {
-  "name": "chonkie",
+  "name": "chonkie-main",
   "version": "0.3.0",
-  "description": "🦛 CHONK your texts in TS with Chonkie!✨The no-nonsense lightweight and efficient chunking library.",
-  "license": "MIT",
-  "homepage": "https://docs.chonkie.ai",
+  "private": true,
+  "description": "Monorepo for Chonkie - lightweight and efficient text chunking library",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chonkie-inc/chonkie-ts.git"
   },
-  "bugs": {
-    "url": "https://github.com/chonkie-inc/chonkie-ts/issues"
-  },
-  "type": "module",
-  "main": "dist/chonkie/index.js",
-  "types": "dist/chonkie/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/chonkie/index.d.ts",
-      "import": "./dist/chonkie/index.js"
-    },
-    "./cloud": {
-      "types": "./dist/chonkie/cloud/index.d.ts",
-      "import": "./dist/chonkie/cloud/index.js"
-    },
-    "./types": {
-      "types": "./dist/chonkie/types/index.d.ts",
-      "import": "./dist/chonkie/types/index.js"
-    },
-    "./chunker/token": {
-      "types": "./dist/chonkie/chunker/token.d.ts",
-      "import": "./dist/chonkie/chunker/token.js"
-    },
-    "./chunker/sentence": {
-      "types": "./dist/chonkie/chunker/sentence.d.ts",
-      "import": "./dist/chonkie/chunker/sentence.js"
-    },
-    "./chunker/recursive": {
-      "types": "./dist/chonkie/chunker/recursive.d.ts",
-      "import": "./dist/chonkie/chunker/recursive.js"
-    },
-    "./chunker/code": {
-      "types": "./dist/chonkie/chunker/code.d.ts",
-      "import": "./dist/chonkie/chunker/code.js"
-    },
-    "./friends": {
-      "types": "./dist/chonkie/friends/index.d.ts",
-      "import": "./dist/chonkie/friends/index.js"
-    }
-  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "npm run clean && tsc",
-    "prepublishOnly": "npm run build",
-    "test": "jest"
-  },
-  "files": [
-    "dist"
-  ],
-  "author": "Shreyash Nigam <shreyash@chonkie.ai>",
-  "contributors": [
-    "Shreyash Nigam <shreyash@chonkie.ai>",
-    "Bhavnick Minhas <bhavnick@chonkie.ai>"
-  ],
-  "keywords": [
-    "chonkie",
-    "chunking",
-    "splitting",
-    "retrieval",
-    "vector-search",
-    "vector-database",
-    "vector-embedding",
-    "semantic-search",
-    "LLM",
-    "AI"
-  ],
-  "dependencies": {
-    "@huggingface/hub": "^2.0.1",
-    "@huggingface/transformers": "^3.5.1",
-    "chonkie": "^0.2.6",
-    "jsonschema": "^1.5.0"
-  },
-  "optionalDependencies": {
-    "chromadb": "^2.4.6",
-    "cohere-ai": "^7.17.1",
-    "openai": "^4.98.0",
-    "tree-sitter-wasms": "^0.1.0",
-    "uuid": "^11.1.0",
-    "web-tree-sitter": "^0.25.4"
-  },
-  "peerDependencies": {
-    "cohere-ai": "^7.17.1",
-    "openai": "^4.98.0"
+    "clean": "rimraf packages/*/dist",
+    "build": "npm run clean && npm run build --workspace=packages/core && npm run build --workspace=packages/token && npm run build --workspace=packages/cloud",
+    "test": "npm run build && npm run test --workspaces",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run build && changeset publish"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
+    "@changesets/cli": "^2.29.7",
     "@types/node": "^22.15.21",
-    "dotenv": "^16.5.0",
-    "jest": "^29.5.0",
+    "publint": "^0.3.14",
     "rimraf": "^6.0.1",
-    "ts-jest": "^29.1.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

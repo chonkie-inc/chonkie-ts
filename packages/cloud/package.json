@@ -1,0 +1,54 @@
+{
+  "name": "@chonkiejs/cloud",
+  "version": "0.0.5",
+  "description": "Cloud-based chunkers for Chonkie - semantic, neural, and AI-powered text chunking via api.chonkie.ai",
+  "license": "MIT",
+  "homepage": "https://docs.chonkie.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chonkie-inc/chonkie-ts.git",
+    "directory": "packages/cloud"
+  },
+  "author": "Bhavnick Minhas",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc && tsc-alias",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "chonkie",
+    "chunking",
+    "cloud",
+    "semantic",
+    "neural",
+    "ai",
+    "embeddings",
+    "api"
+  ],
+  "peerDependencies": {
+    "@chonkiejs/core": ">=0.0.4"
+  },
+  "devDependencies": {
+    "@chonkiejs/core": ">=0.0.4",
+    "@types/node": "^22.15.21",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
+  }
+}
