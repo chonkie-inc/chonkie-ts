@@ -39,8 +39,5 @@
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.6",
     "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "@chonkiejs/core": "^0.0.3"
   }
 }
