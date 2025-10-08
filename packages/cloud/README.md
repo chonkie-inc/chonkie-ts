@@ -102,7 +102,7 @@ Remember: No contribution is too small for this tiny hippo!
 Chonkie would like to CHONK its way through a special thanks to all the users and contributors who have helped make this library what it is today! Your feedback, issue reports, and improvements have helped make Chonkie the CHONKIEST it can be.
 
 And of course, special thanks to [Moto Moto](https://www.youtube.com/watch?v=I0zZC4wtqDQ&t=5s) for endorsing Chonkie with his famous quote:
-> "I like them big, I like them chonkie in TypeScript" ~ Moto Moto... definitly did not say this
+> "I like them big, I like them chonkie in TypeScript" ~ Moto Moto... definitely did not say this
 
 ## Citation
 
