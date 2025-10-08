@@ -1,6 +1,6 @@
 {
   "name": "@chonkiejs/cloud",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Cloud-based chunkers for Chonkie - semantic, neural, and AI-powered text chunking via api.chonkie.ai",
   "license": "MIT",
   "homepage": "https://docs.chonkie.ai",
@@ -39,10 +39,10 @@
     "api"
   ],
   "peerDependencies": {
-    "@chonkiejs/core": "^0.0.2"
+    "@chonkiejs/core": "^0.0.3"
   },
   "devDependencies": {
-    "@chonkiejs/core": "^0.0.2",
+    "@chonkiejs/core": "^0.0.3",
     "@types/node": "^22.15.21",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.6",
