@@ -1,6 +1,6 @@
 import { RecursiveChunker } from '../src';
 
-describe('RecursiveChunker', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('RecursiveChunker', () => {
   it('should chunk text successfully', async () => {
     const chunker = new RecursiveChunker({ chunkSize: 50 });
     const text = 'Paragraph one.\n\nParagraph two with more text.';

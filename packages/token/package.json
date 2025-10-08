@@ -23,7 +23,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc && tsc-alias",
-    "test": "vitest run"
+    "test": "echo 'No tests for @chonkiejs/token yet'"
   },
   "files": [
     "dist"

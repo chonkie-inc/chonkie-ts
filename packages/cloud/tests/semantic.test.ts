@@ -1,6 +1,6 @@
 import { SemanticChunker } from '../src';
 
-describe('SemanticChunker', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('SemanticChunker', () => {
   it('should chunk text successfully', async () => {
     const chunker = new SemanticChunker({ chunkSize: 60 });
     const text = 'AI is advancing rapidly. Technology continues to evolve. Climate change needs attention. Environmental issues are critical.';

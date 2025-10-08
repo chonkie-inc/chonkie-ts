@@ -1,6 +1,6 @@
 import { NeuralChunker } from '../src';
 
-describe('NeuralChunker', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('NeuralChunker', () => {
   it('should chunk text successfully', async () => {
     const chunker = new NeuralChunker();
     const text = 'Neural networks learn patterns. Deep learning is powerful. Transformers changed NLP. Modern AI is impressive.';

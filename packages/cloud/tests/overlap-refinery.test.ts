@@ -1,6 +1,6 @@
 import { TokenChunker, OverlapRefinery } from '../src';
 
-describe('OverlapRefinery', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('OverlapRefinery', () => {
   it('should add overlap to chunks successfully', async () => {
     // First create some chunks
     const chunker = new TokenChunker({ chunkSize: 30 });

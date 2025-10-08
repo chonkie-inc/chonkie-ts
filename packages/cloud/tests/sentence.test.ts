@@ -1,6 +1,6 @@
 import { SentenceChunker } from '../src';
 
-describe('SentenceChunker', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('SentenceChunker', () => {
   it('should chunk text successfully', async () => {
     const chunker = new SentenceChunker({ chunkSize: 50 });
     const text = 'First sentence here. Second sentence. Third one too.';

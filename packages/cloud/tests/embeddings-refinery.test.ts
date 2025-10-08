@@ -1,6 +1,6 @@
 import { TokenChunker, EmbeddingsRefinery } from '../src';
 
-describe('EmbeddingsRefinery', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('EmbeddingsRefinery', () => {
   it('should add embeddings to chunks successfully', async () => {
     // First create some chunks
     const chunker = new TokenChunker({ chunkSize: 30 });

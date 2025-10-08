@@ -1,6 +1,6 @@
 import { TokenChunker } from '../src';
 
-describe('TokenChunker', () => {
+describe.skipIf(!process.env.CHONKIE_API_KEY)('TokenChunker', () => {
   it('should chunk text successfully', async () => {
     const chunker = new TokenChunker({ chunkSize: 30 });
     const text = 'This is a test. It should be chunked properly.';
