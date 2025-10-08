@@ -1,5 +1,11 @@
 # @chonkiejs/cloud
 
+## 0.0.4
+
+### Patch Changes
+
+- Add OverlapRefinery and EmbeddingsRefinery
+
 ## 0.0.3
 
 ### Patch Changes

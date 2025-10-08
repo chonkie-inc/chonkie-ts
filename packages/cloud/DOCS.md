@@ -477,11 +477,18 @@ All exports include full TypeScript type definitions:
 
 ```typescript
 import type {
+  // Chunker options
   TokenChunkerOptions,
   SentenceChunkerOptions,
   RecursiveChunkerOptions,
   SemanticChunkerOptions,
   NeuralChunkerOptions,
+  CodeChunkerOptions,
+  LateChunkerOptions,
+  // Refinery options
+  EmbeddingsRefineryOptions,
+  OverlapRefineryOptions,
+  // Common types
   ChunkerInput,
   CloudClientConfig
 } from '@chonkiejs/cloud';
