@@ -4,11 +4,10 @@
 
 # 🦛 chonkie-ts ✨
 
-[![npm badge](https://img.shields.io/npm/v/chonkie)](https://www.npmjs.com/package/chonkie)
-[![npm downloads](https://img.shields.io/npm/dt/chonkie)](https://www.npmjs.com/package/chonkie)
-[![npm license](https://img.shields.io/npm/l/chonkie)](https://www.npmjs.com/package/chonkie)
-[![npm bundle size](https://img.shields.io/bundlephobia/min/chonkie)](https://www.npmjs.com/package/chonkie)
-[![Documentation](https://img.shields.io/badge/docs-DOCS.md-blue.svg)](./DOCS.md)
+[![npm version](https://img.shields.io/npm/v/@chonkiejs/core)](https://www.npmjs.com/package/@chonkiejs/core)
+[![npm downloads](https://img.shields.io/npm/dt/@chonkiejs/core)](https://www.npmjs.com/package/@chonkiejs/core)
+[![npm license](https://img.shields.io/npm/l/@chonkiejs/core)](https://www.npmjs.com/package/@chonkiejs/core)
+[![npm bundle size](https://img.shields.io/bundlephobia/min/@chonkiejs/core)](https://www.npmjs.com/package/@chonkiejs/core)
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![Github Stars](https://img.shields.io/github/stars/chonkie-inc/chonkie-ts?style=social)](https://github.com/chonkie-inc/chonkie-ts)
 
@@ -22,7 +21,7 @@ _🦛 CHONK your texts in TypeScript with Chonkie!✨ The no-nonsense lightweigh
 
 </div>
 
-We built `chonkie-ts` while developing a TypeScript web app that needed fast, on-the-fly text chunking for RAG applications. After trying several existing libraries, we found them either too heavy or not flexible enough for our needs. `chonkie-ts` is a port of the original `chonkie` library, but with some type-safety and a few extra features to make it more useful for TypeScript developers!
+We built `chonkiejs` while developing a TypeScript web app that needed fast, on-the-fly text chunking for RAG applications. After trying several existing libraries, we found them either too heavy or not flexible enough for our needs. `chonkiejs` is a port of the original `chonkie` library, but with some type-safety and a few extra features to make it more useful for TypeScript developers!
 
 **🚀 Feature-rich**: All the CHONKs you'd ever need </br>
 **✨ Easy to use**: Install, Import, CHONK </br>
