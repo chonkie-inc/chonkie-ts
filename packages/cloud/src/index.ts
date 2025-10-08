@@ -1,9 +1,9 @@
 /**
- * @hippolib/cloud
+ * @chonkiejs/cloud
  * Cloud-based chunkers for Chonkie via api.chonkie.ai
  */
 
-export { CloudClient } from '@/base';
+export { CloudBaseChunker } from '@/base';
 export type { CloudClientConfig, ChunkerInput } from '@/base';
 
 export { TokenChunker } from '@/token';
@@ -20,3 +20,9 @@ export type { SemanticChunkerOptions } from '@/semantic';
 
 export { NeuralChunker } from '@/neural';
 export type { NeuralChunkerOptions } from '@/neural';
+
+export { CodeChunker } from '@/code';
+export type { CodeChunkerOptions } from '@/code';
+
+export { LateChunker } from '@/late';
+export type { LateChunkerOptions } from '@/late';

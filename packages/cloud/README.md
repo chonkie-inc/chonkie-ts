@@ -78,6 +78,8 @@ for (const chunk of chunks) {
 | `RecursiveChunker` | Uses hierarchical rules (paragraphs → sentences → punctuation → words) with customizable recipes |
 | `SemanticChunker` | Creates semantically coherent chunks using embedding-based similarity analysis |
 | `NeuralChunker` | Uses neural networks for intelligent, context-aware chunking |
+| `CodeChunker` | Splits code into structurally meaningful chunks based on AST parsing |
+| `LateChunker` | Recursive chunking with embeddings for enhanced semantic coherence |
 
 For detailed API documentation, configuration options, and advanced usage, see [DOCS.md](./DOCS.md).
 

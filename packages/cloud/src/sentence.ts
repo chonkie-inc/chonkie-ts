@@ -4,7 +4,7 @@
  */
 
 import { Chunk } from '@chonkiejs/core';
-import { CloudClient, ChunkerInput } from '@/base';
+import { CloudBaseChunker, ChunkerInput } from '@/base';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -38,7 +38,7 @@ interface ApiChunkResponse {
   token_count: number;
 }
 
-export class SentenceChunker extends CloudClient {
+export class SentenceChunker extends CloudBaseChunker {
   private readonly config: {
     tokenizer: string;
     chunkSize: number;

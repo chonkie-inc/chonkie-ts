@@ -1,5 +1,5 @@
 /**
- * Neural chunker that uses neural networks for intelligent chunking
+ * Late chunker that uses recursive chunking with embeddings
  * via api.chonkie.ai
  */
 
@@ -8,10 +8,16 @@ import { CloudBaseChunker, ChunkerInput } from '@/base';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export interface NeuralChunkerOptions {
-  /** Model to use (default: "mirth/chonky_modernbert_large_1") */
-  model?: string;
-  /** Minimum characters per chunk (default: 10) */
+export interface LateChunkerOptions {
+  /** Embedding model to use (default: "all-MiniLM-L6-v2") */
+  embeddingModel?: string;
+  /** Maximum tokens per chunk (default: 512) */
+  chunkSize?: number;
+  /** Recipe name (default: "default") */
+  recipe?: string;
+  /** Language for recipe (default: "en") */
+  lang?: string;
+  /** Minimum characters per chunk (default: 24) */
   minCharactersPerChunk?: number;
   /** API key (reads from CHONKIE_API_KEY env var if not provided) */
   apiKey?: string;
@@ -24,15 +30,19 @@ interface ApiChunkResponse {
   start_index: number;
   end_index: number;
   token_count: number;
+  embedding?: number[];
 }
 
-export class NeuralChunker extends CloudBaseChunker {
+export class LateChunker extends CloudBaseChunker {
   private readonly config: {
-    model: string;
+    embeddingModel: string;
+    chunkSize: number;
+    recipe: string;
+    lang: string;
     minCharactersPerChunk: number;
   };
 
-  constructor(options: NeuralChunkerOptions = {}) {
+  constructor(options: LateChunkerOptions = {}) {
     const apiKey = options.apiKey || process.env.CHONKIE_API_KEY;
     if (!apiKey) {
       throw new Error('API key is required. Provide it in options.apiKey or set CHONKIE_API_KEY environment variable.');
@@ -41,8 +51,11 @@ export class NeuralChunker extends CloudBaseChunker {
     super({ apiKey, baseUrl: options.baseUrl });
 
     this.config = {
-      model: options.model || 'mirth/chonky_modernbert_large_1',
-      minCharactersPerChunk: options.minCharactersPerChunk || 10,
+      embeddingModel: options.embeddingModel || 'all-MiniLM-L6-v2',
+      chunkSize: options.chunkSize || 512,
+      recipe: options.recipe || 'default',
+      lang: options.lang || 'en',
+      minCharactersPerChunk: options.minCharactersPerChunk || 24,
     };
   }
 
@@ -55,23 +68,27 @@ export class NeuralChunker extends CloudBaseChunker {
       const fileName = path.basename(input.filepath) || 'file.txt';
       const blob = new Blob([fileContent]);
       formData.append('file', blob, fileName);
-      formData.append('embedding_model', this.config.model);
+      formData.append('embedding_model', this.config.embeddingModel);
+      formData.append('chunk_size', this.config.chunkSize.toString());
+      formData.append('recipe', this.config.recipe);
+      formData.append('lang', this.config.lang);
       formData.append('min_characters_per_chunk', this.config.minCharactersPerChunk.toString());
-      formData.append('return_type', 'chunks');
 
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/neural', {
+      data = await this.request<ApiChunkResponse[]>('/v1/chunk/late', {
         method: 'POST',
         body: formData,
       });
     } else if (input.text) {
       const payload = {
         text: input.text,
-        embedding_model: this.config.model,
+        embedding_model: this.config.embeddingModel,
+        chunk_size: this.config.chunkSize,
+        recipe: this.config.recipe,
+        lang: this.config.lang,
         min_characters_per_chunk: this.config.minCharactersPerChunk,
-        return_type: 'chunks',
       };
 
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/neural', {
+      data = await this.request<ApiChunkResponse[]>('/v1/chunk/late', {
         method: 'POST',
         body: payload,
       });
@@ -92,6 +109,6 @@ export class NeuralChunker extends CloudBaseChunker {
   }
 
   toString(): string {
-    return `NeuralChunker(model=${this.config.model})`;
+    return `LateChunker(embeddingModel=${this.config.embeddingModel}, chunkSize=${this.config.chunkSize}, recipe=${this.config.recipe})`;
   }
 }

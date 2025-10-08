@@ -1,5 +1,5 @@
 /**
- * Neural chunker that uses neural networks for intelligent chunking
+ * Code chunker that splits code into structurally meaningful chunks
  * via api.chonkie.ai
  */
 
@@ -8,11 +8,13 @@ import { CloudBaseChunker, ChunkerInput } from '@/base';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export interface NeuralChunkerOptions {
-  /** Model to use (default: "mirth/chonky_modernbert_large_1") */
-  model?: string;
-  /** Minimum characters per chunk (default: 10) */
-  minCharactersPerChunk?: number;
+export interface CodeChunkerOptions {
+  /** Tokenizer to use (default: "gpt2") */
+  tokenizer?: string;
+  /** Maximum tokens per chunk (default: 1500) */
+  chunkSize?: number;
+  /** Programming language (required, e.g., "python", "javascript", "typescript") */
+  language: string;
   /** API key (reads from CHONKIE_API_KEY env var if not provided) */
   apiKey?: string;
   /** Base URL for API (default: "https://api.chonkie.ai") */
@@ -26,13 +28,18 @@ interface ApiChunkResponse {
   token_count: number;
 }
 
-export class NeuralChunker extends CloudBaseChunker {
+export class CodeChunker extends CloudBaseChunker {
   private readonly config: {
-    model: string;
-    minCharactersPerChunk: number;
+    tokenizer: string;
+    chunkSize: number;
+    language: string;
   };
 
-  constructor(options: NeuralChunkerOptions = {}) {
+  constructor(options: CodeChunkerOptions) {
+    if (!options.language) {
+      throw new Error('Language is required for code chunking');
+    }
+
     const apiKey = options.apiKey || process.env.CHONKIE_API_KEY;
     if (!apiKey) {
       throw new Error('API key is required. Provide it in options.apiKey or set CHONKIE_API_KEY environment variable.');
@@ -41,8 +48,9 @@ export class NeuralChunker extends CloudBaseChunker {
     super({ apiKey, baseUrl: options.baseUrl });
 
     this.config = {
-      model: options.model || 'mirth/chonky_modernbert_large_1',
-      minCharactersPerChunk: options.minCharactersPerChunk || 10,
+      tokenizer: options.tokenizer || 'gpt2',
+      chunkSize: options.chunkSize || 1500,
+      language: options.language,
     };
   }
 
@@ -52,26 +60,26 @@ export class NeuralChunker extends CloudBaseChunker {
     if (input.filepath) {
       const formData = new FormData();
       const fileContent = fs.readFileSync(input.filepath);
-      const fileName = path.basename(input.filepath) || 'file.txt';
+      const fileName = path.basename(input.filepath) || 'code.txt';
       const blob = new Blob([fileContent]);
       formData.append('file', blob, fileName);
-      formData.append('embedding_model', this.config.model);
-      formData.append('min_characters_per_chunk', this.config.minCharactersPerChunk.toString());
-      formData.append('return_type', 'chunks');
+      formData.append('tokenizer_or_token_counter', this.config.tokenizer);
+      formData.append('chunk_size', this.config.chunkSize.toString());
+      formData.append('language', this.config.language);
 
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/neural', {
+      data = await this.request<ApiChunkResponse[]>('/v1/chunk/code', {
         method: 'POST',
         body: formData,
       });
     } else if (input.text) {
       const payload = {
         text: input.text,
-        embedding_model: this.config.model,
-        min_characters_per_chunk: this.config.minCharactersPerChunk,
-        return_type: 'chunks',
+        tokenizer_or_token_counter: this.config.tokenizer,
+        chunk_size: this.config.chunkSize,
+        language: this.config.language,
       };
 
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/neural', {
+      data = await this.request<ApiChunkResponse[]>('/v1/chunk/code', {
         method: 'POST',
         body: payload,
       });
@@ -92,6 +100,6 @@ export class NeuralChunker extends CloudBaseChunker {
   }
 
   toString(): string {
-    return `NeuralChunker(model=${this.config.model})`;
+    return `CodeChunker(language=${this.config.language}, chunkSize=${this.config.chunkSize})`;
   }
 }

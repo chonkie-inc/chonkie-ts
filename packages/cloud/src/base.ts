@@ -14,7 +14,7 @@ export interface ChunkerInput {
   filepath?: string;
 }
 
-export class CloudClient {
+export class CloudBaseChunker {
   protected readonly apiKey: string;
   protected readonly baseUrl: string;
 
