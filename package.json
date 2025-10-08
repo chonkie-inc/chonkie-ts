@@ -13,7 +13,7 @@
   "scripts": {
     "clean": "rimraf packages/*/dist",
     "build": "npm run clean && npm run build --workspace=packages/core && npm run build --workspace=packages/token && npm run build --workspace=packages/cloud",
-    "test": "npm run test --workspaces",
+    "test": "npm run build && npm run test --workspaces",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "npm run build && changeset publish"

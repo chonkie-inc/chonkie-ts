@@ -13,7 +13,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "types": ["node", "jest"],
+    "types": ["node"],
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
