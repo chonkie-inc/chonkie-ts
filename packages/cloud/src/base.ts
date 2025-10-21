@@ -2,7 +2,10 @@
  * Base cloud client for interacting with api.chonkie.ai
  */
 
-import { formatApiError } from '@/utils';
+import { formatApiError, FileUploadResponse, FileReference, createFileReference } from '@/utils';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as mime from 'mime-types';
 
 export interface CloudClientConfig {
   apiKey: string;
@@ -12,6 +15,7 @@ export interface CloudClientConfig {
 export interface ChunkerInput {
   text?: string;
   filepath?: string;
+  file?: FileReference;
 }
 
 export class CloudBaseChunker {
@@ -30,7 +34,7 @@ export class CloudBaseChunker {
     endpoint: string,
     options: {
       method?: string;
-      body?: any;
+      body?: FormData | Record<string, unknown>;
       headers?: Record<string, string>;
     } = {}
   ): Promise<T> {
@@ -82,5 +86,47 @@ export class CloudBaseChunker {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Upload a file to the Chonkie API for OCR/document processing.
+   * This is an internal method used by chunkers to upload files before chunking.
+   *
+   * @param filepath - Path to the file to upload
+   * @returns FileReference object that can be used in subsequent API calls
+   * @internal
+   */
+  protected async uploadFile(filepath: string): Promise<FileReference> {
+    if (!filepath) {
+      throw new Error('File path is required');
+    }
+
+    if (!fs.existsSync(filepath)) {
+      throw new Error(`File not found: ${filepath}`);
+    }
+
+    const formData = new FormData();
+    const fileContent = fs.readFileSync(filepath);
+    const fileName = path.basename(filepath);
+
+    // Detect MIME type from file extension
+    const mimeType = mime.lookup(fileName) || 'application/octet-stream';
+    const blob = new Blob([fileContent], { type: mimeType });
+    formData.append('file', blob, fileName);
+
+    const response = await this.request<FileUploadResponse>('/v1/files', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // The API might return different field names, check common variations
+    const documentName = response.document || (response as Record<string, unknown>).filename || (response as Record<string, unknown>).name || (response as Record<string, unknown>).id;
+
+    if (!documentName || typeof documentName !== 'string') {
+      throw new Error(`Invalid file upload response: missing document identifier. Response: ${JSON.stringify(response)}`);
+    }
+
+    // Return a FileReference with type 'document' and the document name
+    return createFileReference('document', documentName);
   }
 }

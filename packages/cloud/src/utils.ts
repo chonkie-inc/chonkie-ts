@@ -67,3 +67,50 @@ export const API_ERRORS = {
   NOT_FOUND: 'Endpoint not found',
   FORBIDDEN: 'Access forbidden',
 } as const;
+
+/**
+ * File reference type for API requests
+ */
+export interface FileReference {
+  /** Type of file reference */
+  type: 'document' | 'base64';
+  /** Content - either document name or base64 string */
+  content: string;
+}
+
+/**
+ * Response from file upload endpoint
+ */
+export interface FileUploadResponse {
+  /** The document name/ID that can be used in subsequent API calls */
+  document: string;
+  /** Optional additional metadata */
+  [key: string]: unknown;
+}
+
+/**
+ * Create a file reference object for use in JSON API requests
+ *
+ * @param type - Type of file reference ('document' or 'base64')
+ * @param content - The document name or base64 encoded string
+ * @returns FileReference object that can be included in API request bodies
+ *
+ * @example
+ * ```typescript
+ * // Using a document reference
+ * const fileRef = createFileReference('document', 'my-uploaded-file.pdf');
+ *
+ * // Using base64
+ * const base64Data = btoa('file contents');
+ * const fileRef = createFileReference('base64', base64Data);
+ * ```
+ */
+export function createFileReference(type: 'document' | 'base64', content: string): FileReference {
+  if (!type || (type !== 'document' && type !== 'base64')) {
+    throw new Error('File reference type must be either "document" or "base64"');
+  }
+  if (!content || typeof content !== 'string') {
+    throw new Error('File reference content must be a non-empty string');
+  }
+  return { type, content };
+}

@@ -5,8 +5,6 @@
 
 import { Chunk } from '@chonkiejs/core';
 import { CloudBaseChunker, ChunkerInput } from '@/base';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export interface RecursiveChunkerOptions {
   /** Tokenizer to use (default: "gpt2") */
@@ -30,6 +28,17 @@ interface ApiChunkResponse {
   start_index: number;
   end_index: number;
   token_count: number;
+}
+
+interface RecursiveChunkPayload extends Record<string, unknown> {
+  text?: string;
+  file?: { type: string; content: string };
+  tokenizer_or_token_counter: string;
+  chunk_size: number;
+  recipe: string;
+  lang: string;
+  min_characters_per_chunk: number;
+  return_type: string;
 }
 
 export class RecursiveChunker extends CloudBaseChunker {
@@ -59,43 +68,36 @@ export class RecursiveChunker extends CloudBaseChunker {
   }
 
   async chunk(input: ChunkerInput): Promise<Chunk[]> {
-    let data: ApiChunkResponse[];
+    let fileRef = input.file;
 
+    // If filepath is provided, upload it first to get a file reference
     if (input.filepath) {
-      const formData = new FormData();
-      const fileContent = fs.readFileSync(input.filepath);
-      const fileName = path.basename(input.filepath) || 'file.txt';
-      const blob = new Blob([fileContent]);
-      formData.append('file', blob, fileName);
-      formData.append('tokenizer_or_token_counter', this.config.tokenizer);
-      formData.append('chunk_size', this.config.chunkSize.toString());
-      formData.append('recipe', this.config.recipe);
-      formData.append('lang', this.config.lang);
-      formData.append('min_characters_per_chunk', this.config.minCharactersPerChunk.toString());
-      formData.append('return_type', 'chunks');
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/recursive', {
-        method: 'POST',
-        body: formData,
-      });
-    } else if (input.text) {
-      const payload = {
-        text: input.text,
-        tokenizer_or_token_counter: this.config.tokenizer,
-        chunk_size: this.config.chunkSize,
-        recipe: this.config.recipe,
-        lang: this.config.lang,
-        min_characters_per_chunk: this.config.minCharactersPerChunk,
-        return_type: 'chunks',
-      };
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/recursive', {
-        method: 'POST',
-        body: payload,
-      });
-    } else {
-      throw new Error('Either text or filepath must be provided');
+      fileRef = await this.uploadFile(input.filepath);
     }
+
+    // Build the payload
+    const payload: RecursiveChunkPayload = {
+      tokenizer_or_token_counter: this.config.tokenizer,
+      chunk_size: this.config.chunkSize,
+      recipe: this.config.recipe,
+      lang: this.config.lang,
+      min_characters_per_chunk: this.config.minCharactersPerChunk,
+      return_type: 'chunks',
+    };
+
+    // Add either text or file to the payload
+    if (fileRef) {
+      payload.file = fileRef;
+    } else if (input.text) {
+      payload.text = input.text;
+    } else {
+      throw new Error('Either text, filepath, or file must be provided');
+    }
+
+    const data = await this.request<ApiChunkResponse[]>('/v1/chunk/recursive', {
+      method: 'POST',
+      body: payload,
+    });
 
     return data.map(chunk => new Chunk({
       text: chunk.text,

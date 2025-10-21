@@ -7,6 +7,10 @@
 export { CloudBaseChunker } from '@/base';
 export type { CloudClientConfig, ChunkerInput } from '@/base';
 
+// Utils
+export { createFileReference } from '@/utils';
+export type { FileReference, FileUploadResponse } from '@/utils';
+
 // Chunkers
 export { TokenChunker } from '@/chunkers/token';
 export type { TokenChunkerOptions } from '@/chunkers/token';

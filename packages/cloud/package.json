@@ -39,10 +39,11 @@
     "api"
   ],
   "peerDependencies": {
-    "@chonkiejs/core": ">=0.0.4"
+    "@chonkiejs/core": ">=0.0.5"
   },
   "devDependencies": {
-    "@chonkiejs/core": ">=0.0.4",
+    "@chonkiejs/core": "^0.0.5",
+    "@types/mime-types": "^3.0.1",
     "@types/node": "^22.15.21",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.16",
@@ -50,5 +51,8 @@
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "mime-types": "^3.0.1"
   }
 }

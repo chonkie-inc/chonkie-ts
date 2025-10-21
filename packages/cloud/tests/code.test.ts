@@ -1,12 +1,22 @@
-import { NeuralChunker } from '../src';
+import { CodeChunker } from '../src';
 import * as path from 'path';
 
-describe.skipIf(!process.env.CHONKIE_API_KEY)('NeuralChunker', () => {
-  it('should chunk text successfully', async () => {
-    const chunker = new NeuralChunker();
-    const text = 'Neural networks learn patterns. Deep learning is powerful. Transformers changed NLP. Modern AI is impressive.';
+describe.skipIf(!process.env.CHONKIE_API_KEY)('CodeChunker', () => {
+  it('should chunk TypeScript code successfully', async () => {
+    const chunker = new CodeChunker({ language: 'typescript', chunkSize: 100 });
+    const code = `
+function hello() {
+  console.log('Hello world');
+}
 
-    const chunks = await chunker.chunk({ text });
+class Example {
+  constructor() {
+    this.value = 42;
+  }
+}
+    `.trim();
+
+    const chunks = await chunker.chunk({ text: code });
 
     expect(chunks.length).toBeGreaterThan(0);
     expect(chunks[0]).toHaveProperty('text');
@@ -15,9 +25,9 @@ describe.skipIf(!process.env.CHONKIE_API_KEY)('NeuralChunker', () => {
     expect(chunks[0]).toHaveProperty('endIndex');
   });
 
-  it('should chunk file successfully with file upload', async () => {
-    const chunker = new NeuralChunker({ minCharactersPerChunk: 50 });
-    const testFilePath = path.join(__dirname, 'fixtures', 'test-document.md');
+  it('should chunk TypeScript file successfully with file upload', async () => {
+    const chunker = new CodeChunker({ language: 'typescript', chunkSize: 200 });
+    const testFilePath = path.join(__dirname, 'fixtures', 'test-code.ts');
 
     const chunks = await chunker.chunk({ filepath: testFilePath });
 

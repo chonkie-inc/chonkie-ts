@@ -5,8 +5,6 @@
 
 import { Chunk } from '@chonkiejs/core';
 import { CloudBaseChunker, ChunkerInput } from '@/base';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export interface SemanticChunkerOptions {
   /** Embedding model to use (default: "minishlab/potion-base-8M") */
@@ -40,6 +38,22 @@ interface ApiChunkResponse {
   start_index: number;
   end_index: number;
   token_count: number;
+}
+
+interface SemanticChunkPayload extends Record<string, unknown> {
+  text?: string;
+  file?: { type: string; content: string };
+  embedding_model: string;
+  threshold: number;
+  chunk_size: number;
+  similarity_window: number;
+  min_sentences: number;
+  min_chunk_size: number;
+  min_characters_per_sentence: number;
+  threshold_step: number;
+  delim: string | string[];
+  include_delim: string;
+  return_type: string;
 }
 
 export class SemanticChunker extends CloudBaseChunker {
@@ -79,53 +93,41 @@ export class SemanticChunker extends CloudBaseChunker {
   }
 
   async chunk(input: ChunkerInput): Promise<Chunk[]> {
-    let data: ApiChunkResponse[];
+    let fileRef = input.file;
 
+    // If filepath is provided, upload it first to get a file reference
     if (input.filepath) {
-      const formData = new FormData();
-      const fileContent = fs.readFileSync(input.filepath);
-      const fileName = path.basename(input.filepath) || 'file.txt';
-      const blob = new Blob([fileContent]);
-      formData.append('file', blob, fileName);
-      formData.append('embedding_model', this.config.embeddingModel);
-      formData.append('threshold', this.config.threshold.toString());
-      formData.append('chunk_size', this.config.chunkSize.toString());
-      formData.append('similarity_window', this.config.similarityWindow.toString());
-      formData.append('min_sentences', this.config.minSentences.toString());
-      formData.append('min_chunk_size', this.config.minChunkSize.toString());
-      formData.append('min_characters_per_sentence', this.config.minCharactersPerSentence.toString());
-      formData.append('threshold_step', this.config.thresholdStep.toString());
-      formData.append('delim', JSON.stringify(this.config.delim));
-      formData.append('include_delim', this.config.includeDelim || 'prev');
-      formData.append('return_type', 'chunks');
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/semantic', {
-        method: 'POST',
-        body: formData,
-      });
-    } else if (input.text) {
-      const payload = {
-        text: input.text,
-        embedding_model: this.config.embeddingModel,
-        threshold: this.config.threshold,
-        chunk_size: this.config.chunkSize,
-        similarity_window: this.config.similarityWindow,
-        min_sentences: this.config.minSentences,
-        min_chunk_size: this.config.minChunkSize,
-        min_characters_per_sentence: this.config.minCharactersPerSentence,
-        threshold_step: this.config.thresholdStep,
-        delim: this.config.delim,
-        include_delim: this.config.includeDelim,
-        return_type: 'chunks',
-      };
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/semantic', {
-        method: 'POST',
-        body: payload,
-      });
-    } else {
-      throw new Error('Either text or filepath must be provided');
+      fileRef = await this.uploadFile(input.filepath);
     }
+
+    // Build the payload
+    const payload: SemanticChunkPayload = {
+      embedding_model: this.config.embeddingModel,
+      threshold: this.config.threshold,
+      chunk_size: this.config.chunkSize,
+      similarity_window: this.config.similarityWindow,
+      min_sentences: this.config.minSentences,
+      min_chunk_size: this.config.minChunkSize,
+      min_characters_per_sentence: this.config.minCharactersPerSentence,
+      threshold_step: this.config.thresholdStep,
+      delim: this.config.delim,
+      include_delim: this.config.includeDelim || 'prev',
+      return_type: 'chunks',
+    };
+
+    // Add either text or file to the payload
+    if (fileRef) {
+      payload.file = fileRef;
+    } else if (input.text) {
+      payload.text = input.text;
+    } else {
+      throw new Error('Either text, filepath, or file must be provided');
+    }
+
+    const data = await this.request<ApiChunkResponse[]>('/v1/chunk/semantic', {
+      method: 'POST',
+      body: payload,
+    });
 
     return data.map(chunk => new Chunk({
       text: chunk.text,

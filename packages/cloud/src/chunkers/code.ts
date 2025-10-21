@@ -5,8 +5,6 @@
 
 import { Chunk } from '@chonkiejs/core';
 import { CloudBaseChunker, ChunkerInput } from '@/base';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export interface CodeChunkerOptions {
   /** Tokenizer to use (default: "gpt2") */
@@ -26,6 +24,14 @@ interface ApiChunkResponse {
   start_index: number;
   end_index: number;
   token_count: number;
+}
+
+interface CodeChunkPayload extends Record<string, unknown> {
+  text?: string;
+  file?: { type: string; content: string };
+  tokenizer_or_token_counter: string;
+  chunk_size: number;
+  language: string;
 }
 
 export class CodeChunker extends CloudBaseChunker {
@@ -55,37 +61,33 @@ export class CodeChunker extends CloudBaseChunker {
   }
 
   async chunk(input: ChunkerInput): Promise<Chunk[]> {
-    let data: ApiChunkResponse[];
+    let fileRef = input.file;
 
+    // If filepath is provided, upload it first to get a file reference
     if (input.filepath) {
-      const formData = new FormData();
-      const fileContent = fs.readFileSync(input.filepath);
-      const fileName = path.basename(input.filepath) || 'code.txt';
-      const blob = new Blob([fileContent]);
-      formData.append('file', blob, fileName);
-      formData.append('tokenizer_or_token_counter', this.config.tokenizer);
-      formData.append('chunk_size', this.config.chunkSize.toString());
-      formData.append('language', this.config.language);
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/code', {
-        method: 'POST',
-        body: formData,
-      });
-    } else if (input.text) {
-      const payload = {
-        text: input.text,
-        tokenizer_or_token_counter: this.config.tokenizer,
-        chunk_size: this.config.chunkSize,
-        language: this.config.language,
-      };
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/code', {
-        method: 'POST',
-        body: payload,
-      });
-    } else {
-      throw new Error('Either text or filepath must be provided');
+      fileRef = await this.uploadFile(input.filepath);
     }
+
+    // Build the payload
+    const payload: CodeChunkPayload = {
+      tokenizer_or_token_counter: this.config.tokenizer,
+      chunk_size: this.config.chunkSize,
+      language: this.config.language,
+    };
+
+    // Add either text or file to the payload
+    if (fileRef) {
+      payload.file = fileRef;
+    } else if (input.text) {
+      payload.text = input.text;
+    } else {
+      throw new Error('Either text, filepath, or file must be provided');
+    }
+
+    const data = await this.request<ApiChunkResponse[]>('/v1/chunk/code', {
+      method: 'POST',
+      body: payload,
+    });
 
     return data.map(chunk => new Chunk({
       text: chunk.text,

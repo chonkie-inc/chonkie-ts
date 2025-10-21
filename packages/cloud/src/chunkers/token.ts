@@ -5,8 +5,6 @@
 
 import { Chunk } from '@chonkiejs/core';
 import { CloudBaseChunker, ChunkerInput } from '@/base';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export interface TokenChunkerOptions {
   /** Tokenizer to use (default: "gpt2") */
@@ -26,6 +24,15 @@ interface ApiChunkResponse {
   start_index: number;
   end_index: number;
   token_count: number;
+}
+
+interface TokenChunkPayload extends Record<string, unknown> {
+  text?: string;
+  file?: { type: string; content: string };
+  tokenizer_or_token_counter: string;
+  chunk_size: number;
+  chunk_overlap: number;
+  return_type: string;
 }
 
 export class TokenChunker extends CloudBaseChunker {
@@ -51,41 +58,34 @@ export class TokenChunker extends CloudBaseChunker {
   }
 
   async chunk(input: ChunkerInput): Promise<Chunk[]> {
-    let data: ApiChunkResponse[];
+    let fileRef = input.file;
 
+    // If filepath is provided, upload it first to get a file reference
     if (input.filepath) {
-      // Use FormData for file uploads
-      const formData = new FormData();
-      const fileContent = fs.readFileSync(input.filepath);
-      const fileName = path.basename(input.filepath) || 'file.txt';
-      const blob = new Blob([fileContent]);
-      formData.append('file', blob, fileName);
-      formData.append('tokenizer_or_token_counter', this.config.tokenizer);
-      formData.append('chunk_size', this.config.chunkSize.toString());
-      formData.append('chunk_overlap', this.config.chunkOverlap.toString());
-      formData.append('return_type', 'chunks');
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/token', {
-        method: 'POST',
-        body: formData,
-      });
-    } else if (input.text) {
-      // Use JSON payload for text input
-      const payload = {
-        text: input.text,
-        tokenizer_or_token_counter: this.config.tokenizer,
-        chunk_size: this.config.chunkSize,
-        chunk_overlap: this.config.chunkOverlap,
-        return_type: 'chunks',
-      };
-
-      data = await this.request<ApiChunkResponse[]>('/v1/chunk/token', {
-        method: 'POST',
-        body: payload,
-      });
-    } else {
-      throw new Error('Either text or filepath must be provided');
+      fileRef = await this.uploadFile(input.filepath);
     }
+
+    // Build the payload
+    const payload: TokenChunkPayload = {
+      tokenizer_or_token_counter: this.config.tokenizer,
+      chunk_size: this.config.chunkSize,
+      chunk_overlap: this.config.chunkOverlap,
+      return_type: 'chunks',
+    };
+
+    // Add either text or file to the payload
+    if (fileRef) {
+      payload.file = fileRef;
+    } else if (input.text) {
+      payload.text = input.text;
+    } else {
+      throw new Error('Either text, filepath, or file must be provided');
+    }
+
+    const data = await this.request<ApiChunkResponse[]>('/v1/chunk/token', {
+      method: 'POST',
+      body: payload,
+    });
 
     // Convert API response to Chunk objects
     return data.map(chunk => new Chunk({
