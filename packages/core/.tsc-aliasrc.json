@@ -1,3 +1,6 @@
 {
-  "resolveFullPaths": true
+  "resolveFullPaths": true,
+  "output": {
+    "fileExtension": ".js"
+  }
 }

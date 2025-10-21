@@ -1,5 +1,11 @@
 # @chonkiejs/core
 
+## 0.0.5
+
+### Patch Changes
+
+- Fix: Added full path resolution for .js files
+
 ## 0.0.4
 
 ### Patch Changes
