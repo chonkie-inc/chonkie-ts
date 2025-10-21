@@ -13,8 +13,8 @@ importers:
         version: 3.0.1
     devDependencies:
       '@chonkiejs/core':
-        specifier: ^0.0.4
-        version: 0.0.4
+        specifier: ^0.0.5
+        version: 0.0.5
       '@types/mime-types':
         specifier: ^3.0.1
         version: 3.0.1
@@ -42,8 +42,8 @@ importers:
 
 packages:
 
-  '@chonkiejs/core@0.0.4':
-    resolution: {integrity: sha512-9pC4/XS0jzP5ZsokBgDC/r8VVi/AaP3kFvTEOa5S6rGcWN0FQTVXYaifVjtex0yZLCc5+X8ByzAVZIzNx8dWJQ==}
+  '@chonkiejs/core@0.0.5':
+    resolution: {integrity: sha512-Y6geZY+/9AyDy5i+h+aRY1g873d8fe/Xz6vndSo+FrP1hzDDBmAgJXhaZhZqZFQ7RraiNP8ImTiOddNmiiP/hw==}
 
   '@esbuild/aix-ppc64@0.25.11':
     resolution: {integrity: sha512-Xt1dOL13m8u0WE8iplx9Ibbm+hFAO0GsU2P34UNoDGvZYkY8ifSiy6Zuc1lYxfG7svWE2fzqCUmFp5HCn51gJg==}
@@ -897,7 +897,7 @@ packages:
 
 snapshots:
 
-  '@chonkiejs/core@0.0.4': {}
+  '@chonkiejs/core@0.0.5': {}
 
   '@esbuild/aix-ppc64@0.25.11':
     optional: true

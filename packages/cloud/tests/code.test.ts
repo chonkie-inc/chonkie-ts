@@ -27,7 +27,7 @@ class Example {
 
   it('should chunk TypeScript file successfully with file upload', async () => {
     const chunker = new CodeChunker({ language: 'typescript', chunkSize: 200 });
-    const testFilePath = path.join(__dirname, 'fixtures', 'test-code.ts');
+    const testFilePath = path.join(__dirname, 'fixtures', 'test-code.js');
 
     const chunks = await chunker.chunk({ filepath: testFilePath });
 
