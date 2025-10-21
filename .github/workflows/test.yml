@@ -25,6 +25,8 @@ jobs:
     
     - name: Install dependencies
       run: npm ci
-    
+
     - name: Run tests
-      run: npm test 
+      run: npm test
+      env:
+        CHONKIE_API_KEY: ${{ secrets.CHONKIE_API_KEY }} 
